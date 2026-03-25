@@ -16,6 +16,7 @@ export interface MenuItem {
 
 export type MenuCategoryId =
   | 'pizzas'
+  | 'sandwiches'
   | 'entradas'
   | 'panchos'
   | 'empanadas'
@@ -24,6 +25,7 @@ export type MenuCategoryId =
   | 'cervezas'
   | 'vinos'
   | 'bebidas'
+  | 'ensaladas'
 
 export interface MenuCategory {
   id: MenuCategoryId

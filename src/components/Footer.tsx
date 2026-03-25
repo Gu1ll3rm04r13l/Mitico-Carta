@@ -25,9 +25,13 @@ export default function Footer({ onCancelClick }: FooterProps) {
             <p className="text-sm" style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}>
               Pizzería · Bar
             </p>
-            <div className="text-sm space-y-0.5" style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}>
-              <p>Lun–Vie: 12:00 – 23:30</p>
-              <p>Sáb–Dom: 12:00 – 00:00</p>
+            <div
+              className="text-sm space-y-0.5"
+              style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}
+            >
+              <p><strong>Invierno:</strong> Vie–Sáb 20:00 – 01:30</p>
+              <p><strong>Finde largos:</strong> abierto días adicionales</p>
+              <p><strong>Verano:</strong> abierto todos los días</p>
             </div>
           </div>
 
