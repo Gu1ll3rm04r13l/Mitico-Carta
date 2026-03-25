@@ -23,10 +23,12 @@ function validate(data: CancelFormData): CancelErrors {
   if (!data.date) {
     errors.date = 'Indicá la fecha de tu reserva'
   } else {
-    // Permite fechas pasadas (la reserva ya fue hecha antes)
-    const parsed = new Date(`${data.date}T00:00:00`)
-    if (isNaN(parsed.getTime())) {
-      errors.date = 'Fecha inválida'
+    const selected = new Date(`${data.date}T00:00:00`)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) 
+
+    if (selected < today) {
+      errors.date = 'No podés cancelar una reserva de una fecha pasada'
     }
   }
 
@@ -41,27 +43,29 @@ function buildCancelMessage(data: CancelFormData): string {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    year: 'numeric',
   })
 
+  const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+
+  // Eliminamos todos los iconos para evitar errores de visualización
   const lines: string[] = [
-    '¡Hola Mítico! 👋',
+    '*¡Hola Mítico!*',
     'Necesito cancelar una reserva:',
     '',
-    `📅 ${formattedDate}`,
+    `*Fecha:* ${capitalizedDate}`,
   ]
 
   if (data.time) {
-    lines.push(`🕐 ${data.time}hs`)
+    lines.push(`*Hora:* ${data.time}hs`)
   }
 
-  lines.push(`📝 Nombre: ${data.name.trim()}`)
+  lines.push(`*Nombre:* ${data.name.trim()}`)
 
   if (data.notes.trim()) {
-    lines.push(`💬 ${data.notes.trim()}`)
+    lines.push('', `*Motivo:* ${data.notes.trim()}`)
   }
 
-  lines.push('', '¡Gracias! 🙌')
+  lines.push('', 'Muchas gracias.')
 
   return lines.join('\n')
 }

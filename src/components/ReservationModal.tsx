@@ -5,14 +5,22 @@ import type { ReservationFormData, ReservationErrors } from '../types'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-function generateTimeSlots(openHour = 12, closeHour = 23): string[] {
+function generateTimeSlots(): string[] {
   const slots: string[] = []
-  for (let h = openHour; h <= closeHour; h++) {
+  const START_HOUR = 20
+  const END_HOUR = 23 // Hasta las 23:30
+
+  for (let h = START_HOUR; h <= END_HOUR; h++) {
     for (const m of [0, 30]) {
-      if (h === closeHour && m === 30) break
-      slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+      const hour = String(h).padStart(2, '0');
+      const minute = String(m).padStart(2, '0');
+      slots.push(`${hour}:${minute}`);
     }
   }
+  
+  // Agregamos la medianoche como última opción
+  slots.push("00:00")
+  
   return slots
 }
 

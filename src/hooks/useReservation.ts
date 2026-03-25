@@ -58,31 +58,33 @@ function validate(data: ReservationFormData): ReservationErrors {
 }
 
 // ─── Construcción del mensaje ───────────────────────────────────────────────
-
 export function buildReservationMessage(data: ReservationFormData): string {
   const date = new Date(`${data.date}T00:00:00`)
   const formattedDate = date.toLocaleDateString('es-AR', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    year: 'numeric',
   })
 
+  // Capitalizamos la primera letra (ej: Viernes)
+  const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+
+  // Usamos emojis de alta compatibilidad (viejos confiables)
   const lines: string[] = [
-    '¡Hola Mítico! 🍕',
-    'Quiero hacer una reserva:',
+    '*¡Hola Mítico!* ',
+    'Quiero SOLICITAR una reserva:',
     '',
-    `📅 ${formattedDate}`,
-    `🕐 ${data.time}hs`,
-    `👥 ${data.guests} ${data.guests === 1 ? 'persona' : 'personas'}`,
-    `📝 Nombre: ${data.name.trim()}`,
+    `*Fecha:* ${capitalizedDate}`,
+    `*Hora:* ${data.time}hs`,
+    `*Personas:* ${data.guests}`,
+    `*Nombre:* ${data.name.trim()}`,
   ]
 
   if (data.notes.trim()) {
-    lines.push(`💬 ${data.notes.trim()}`)
+    lines.push('', `*Notas:* ${data.notes.trim()}`)
   }
 
-  lines.push('', '¡Gracias! 🙌')
+  lines.push('', '---', '_Enviado desde la web_')
 
   return lines.join('\n')
 }
