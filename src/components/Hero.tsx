@@ -1,10 +1,11 @@
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1600&q=80' // La original
 
 interface HeroProps {
-  onReserveClick: () => void;
+  onReserveClick: () => void
+  onMenuClick: () => void
 }
 
-export default function Hero({ onReserveClick }: HeroProps) {
+export default function Hero({ onReserveClick, onMenuClick }: HeroProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0D0D0D]">
       {/* Imagen de fondo con tratamiento para resaltar la pizza */}
@@ -56,6 +57,7 @@ export default function Hero({ onReserveClick }: HeroProps) {
           </button>
           <a
             href="#menu"
+            onClick={onMenuClick}
             className="px-10 py-4 border border-[#F5E6C8]/30 text-[#F5E6C8] font-bold uppercase tracking-widest text-sm hover:bg-white/5"
           >
             Ver carta

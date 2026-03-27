@@ -99,7 +99,12 @@ function CategoryTab({ category, isActive, onClick }: CategoryTabProps) {
 
 // ─── Menu ──────────────────────────────────────────────────────────────────
 
-export default function Menu() {
+interface MenuProps {
+  isOpen: boolean
+  onToggle: () => void
+}
+
+export default function Menu({ isOpen, onToggle }: MenuProps) {
   const [activeId, setActiveId] = useState<MenuCategory['id']>(MENU_CATEGORIES[0].id)
 
   const activeCategory = MENU_CATEGORIES.find(c => c.id === activeId) || MENU_CATEGORIES[0]
@@ -116,62 +121,105 @@ export default function Menu() {
           >
             Nuestra propuesta
           </span>
-          <h2
-            className="leading-none uppercase"
-            style={{
-              fontFamily: '"Bebas Neue", sans-serif',
-              fontSize: 'clamp(3rem, 10vw, 5rem)',
-              color: '#F5E6C8',
-            }}
-          >
-            La Carta
-          </h2>
-        </div>
-
-        {/* Contenedor de Tabs - FLEX-WRAP para Escritorio */}
-        <div className="relative mb-10">
-          <div
-            // Agregamos md:flex-wrap para que en PC se vean todas las categorías
-            className="flex flex-nowrap md:flex-wrap gap-2 overflow-x-auto md:overflow-visible pb-4 md:pb-0 no-scrollbar -mx-5 px-5 md:mx-0 md:px-0"
-            role="tablist"
-          >
-            {MENU_CATEGORIES.map(cat => (
-              <CategoryTab
-                key={cat.id}
-                category={cat}
-                isActive={cat.id === activeId}
-                onClick={() => setActiveId(cat.id)}
-              />
-            ))}
+          <div className="flex items-center justify-between">
+            <h2
+              className="leading-none uppercase"
+              style={{
+                fontFamily: '"Bebas Neue", sans-serif',
+                fontSize: 'clamp(3rem, 10vw, 5rem)',
+                color: '#F5E6C8',
+              }}
+            >
+              La Carta
+            </h2>
+            <button
+              onClick={onToggle}
+              aria-expanded={isOpen}
+              aria-controls="menu-body"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase border transition-colors duration-200"
+              style={{
+                fontFamily: 'Inter, sans-serif',
+                color: isOpen ? '#8A8070' : '#E8622A',
+                borderColor: isOpen ? 'rgba(245,230,200,0.1)' : 'rgba(232,98,42,0.4)',
+                backgroundColor: isOpen ? 'rgba(245,230,200,0.03)' : 'rgba(232,98,42,0.08)',
+              }}
+            >
+              {isOpen ? 'Comprimir' : 'Ver carta'}
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+                style={{
+                  transition: 'transform 0.35s ease',
+                  transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
-          {/* Sombra sutil solo en móvil */}
-          <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-[#0D0D0D] to-transparent pointer-events-none md:hidden" />
         </div>
 
-        {/* Grid de items */}
+        {/* Cuerpo colapsable */}
         <div
-          role="tabpanel"
-          key={activeId}
-          className="grid gap-4 animate-in fade-in duration-500"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))' }}
+          id="menu-body"
+          style={{
+            display: 'grid',
+            gridTemplateRows: isOpen ? '1fr' : '0fr',
+            transition: 'grid-template-rows 0.4s ease',
+          }}
         >
-          {activeCategory.items.map(item => (
-            <MenuCard key={item.id} item={item} />
-          ))}
+          <div style={{ overflow: 'hidden', minHeight: 0 }}>
+
+            {/* Contenedor de Tabs - FLEX-WRAP para Escritorio */}
+            <div className="relative mb-10">
+              <div
+                className="flex flex-nowrap md:flex-wrap gap-2 overflow-x-auto md:overflow-visible pb-4 md:pb-0 no-scrollbar -mx-5 px-5 md:mx-0 md:px-0"
+                role="tablist"
+              >
+                {MENU_CATEGORIES.map(cat => (
+                  <CategoryTab
+                    key={cat.id}
+                    category={cat}
+                    isActive={cat.id === activeId}
+                    onClick={() => setActiveId(cat.id)}
+                  />
+                ))}
+              </div>
+              {/* Sombra sutil solo en móvil */}
+              <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-[#0D0D0D] to-transparent pointer-events-none md:hidden" />
+            </div>
+
+            {/* Grid de items */}
+            <div
+              role="tabpanel"
+              key={activeId}
+              className="grid gap-4 animate-in fade-in duration-500"
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))' }}
+            >
+              {activeCategory.items.map(item => (
+                <MenuCard key={item.id} item={item} />
+              ))}
+            </div>
+
+            {/* Nota al pie */}
+            <div className="mt-16 pt-8 border-t border-white/5 text-center">
+              <p
+                className="text-xs uppercase tracking-widest"
+                style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}
+              >
+                Mítico Pizza & Cocktails  · Miramar
+              </p>
+              <p className="mt-2 text-[10px] text-white/20">
+                Precios sujetos a cambios sin previo aviso
+              </p>
+            </div>
+
+          </div>
         </div>
 
-        {/* Nota al pie */}
-        <div className="mt-16 pt-8 border-t border-white/5 text-center">
-          <p
-            className="text-xs uppercase tracking-widest"
-            style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}
-          >
-            Mítico Pizza & Cocktails  · Miramar
-          </p>
-          <p className="mt-2 text-[10px] text-white/20">
-            Precios sujetos a cambios sin previo aviso
-          </p>
-        </div>
       </div>
     </section>
   )
