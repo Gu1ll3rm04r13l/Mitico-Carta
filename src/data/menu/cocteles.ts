@@ -7,7 +7,7 @@ export const cocteles: MenuItem[] = [
     { id: 'sour-verde', name: 'Sour Verde', description: 'Gin Blu, jugo de limón, almíbar simple y albahaca.', price: 7900 },
 
     // BY MÍTICO (Autor)
-    { id: 'lucia-del-mar-tiki', name: 'Lucía del Mar (Tiki)', description: 'Trago insignia de la casa con mezcla de rones y frutas tropicales.', price: 10500, isSignature: true },
+    { id: 'lucia-del-mar-tiki', name: 'Lucía del Mar (Tiki)', description: 'Trago insignia de la casa con gin, frutas tropicales y especias.', price: 10500, isSignature: true },
     { id: 'condemora', name: 'Condemora', description: 'Ron de coco, bitter de naranja, vodka de moras, almíbar de romero y lima.', price: 7900, isSignature: true },
     { id: 'usiku', name: 'Usiku', description: 'Baileys, Cynar 70, almíbar mascabo, frutos rojos y café.', price: 6900 },
     { id: 'brandy-crusta', name: 'Brandy Crusta', description: 'Brandy, hesperidina, Smirnoff de frambuesa y angostura.', price: 6900 },

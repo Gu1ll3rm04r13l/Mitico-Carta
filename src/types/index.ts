@@ -59,3 +59,17 @@ export interface CancelFormData {
 }
 
 export type CancelErrors = Partial<Record<keyof CancelFormData, string>>
+
+// ─── Chat ──────────────────────────────────────────────────────────────────
+
+export type ChatRole = 'user' | 'assistant'
+
+export interface ChatMessage {
+  id: string
+  role: ChatRole
+  content: string
+  timestamp: number
+}
+
+/** Intent inicial que puede recibir el chat para pre-cargar un flujo */
+export type ChatIntent = 'order' | null

@@ -14,7 +14,7 @@ import { ensaladas } from './menu/ensaladas';
 export const MENU_CATEGORIES: MenuCategory[] = [
   { id: 'entradas', label: 'Entradas', icon: '🧀', items: entradas },
   { id: 'cervezas', label: 'Cervezas', icon: '🍺', items: cervezas },
-  { id: 'cocteles', label: 'Tragos', icon: '🍸', items: cocteles },
+  { id: 'cocteles', label: 'Cócteles', icon: '🍸', items: cocteles },
   { id: 'vinos', label: 'Vinos', icon: '🍷', items: vinos },
   { id: 'bebidas', label: 'Sin Alcohol', icon: '🥤', items: bebidas },
   { id: 'pizzas', label: 'Pizzas', icon: '🍕', items: pizzas },
