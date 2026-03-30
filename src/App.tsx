@@ -6,6 +6,7 @@ import Footer from './components/Footer'
 import ReservationModal from './components/ReservationModal'
 import CancelReservationModal from './components/CancelReservationModal'
 import ChatWidget from './components/ChatWidget'
+import LogoM from './components/LogoM'
 import type { ChatIntent } from './types'
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
 
   return (
     <main>
+      <LogoM />
       <Hero
         onReserveClick={() => setIsReservationOpen(true)}
         onOrderClick={handleOrderClick}

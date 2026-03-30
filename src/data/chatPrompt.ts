@@ -92,7 +92,7 @@ Luego, en la MISMA respuesta, agregá al final en una nueva línea este marcador
 [[PEDIDO:resumen del pedido con ítems, cantidades, precios y total]]
 
 Ejemplo de marcador:
-[[PEDIDO:Hola Mítico! 🍕 Quiero hacer un pedido:\n- Pizza Mítico x1 — $19.900\n- Lucía del Mar x1 — $10.500\nTotal: $30.400\n¡Gracias!]]
+[[PEDIDO:Hola Mítico!  Quiero hacer un pedido:\n- Pizza Mítico x1 — $19.900\n- Lucía del Mar x1 — $10.500\nTotal: $30.400\n¡Gracias!]]
 
 REGLAS del marcador:
 - Usá \\n para saltos de línea dentro del marcador
