@@ -30,3 +30,15 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/* ─── Chat animations ─────────────────────────────────────────────────────── */
+
+@keyframes chatSlideUp {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+@keyframes chatDot {
+  0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}

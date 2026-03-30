@@ -5,16 +5,28 @@ import ExperienceGallery from './components/ExperienceGallery'
 import Footer from './components/Footer'
 import ReservationModal from './components/ReservationModal'
 import CancelReservationModal from './components/CancelReservationModal'
+import ChatWidget from './components/ChatWidget'
+import type { ChatIntent } from './types'
 
 export default function App() {
   const [isReservationOpen, setIsReservationOpen] = useState(false)
   const [isCancelOpen, setIsCancelOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(true)
 
+  // Chat — estado externo para poder abrirlo programáticamente
+  const [isChatOpen, setIsChatOpen] = useState(false)
+  const [chatIntent, setChatIntent] = useState<ChatIntent>(null)
+
+  const handleOrderClick = () => {
+    setChatIntent('order')
+    setIsChatOpen(true)
+  }
+
   return (
     <main>
       <Hero
         onReserveClick={() => setIsReservationOpen(true)}
+        onOrderClick={handleOrderClick}
         onMenuClick={() => setIsMenuOpen(true)}
       />
       <Menu isOpen={isMenuOpen} onToggle={() => setIsMenuOpen(prev => !prev)} />
@@ -27,6 +39,13 @@ export default function App() {
       {isCancelOpen && (
         <CancelReservationModal onClose={() => setIsCancelOpen(false)} />
       )}
+
+      <ChatWidget
+        isOpen={isChatOpen}
+        onOpenChange={setIsChatOpen}
+        intent={chatIntent}
+        onIntentHandled={() => setChatIntent(null)}
+      />
     </main>
   )
 }
