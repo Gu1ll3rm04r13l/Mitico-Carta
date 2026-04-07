@@ -59,7 +59,7 @@ export default function Hero({ onReserveClick, onOrderClick, onMenuClick }: Hero
             className="px-10 py-4 font-bold uppercase tracking-widest text-sm transition-all hover:opacity-85 active:scale-[0.97]"
             style={{ backgroundColor: '#C4963A', color: '#fff' }}
           >
-            Hacer pedido
+            Delivery
           </button>
           <a
             href="#menu"

@@ -36,7 +36,7 @@ const LOCAL_INFO = {
   ciudad: 'Miramar, Argentina',
   instagram: '@mitico.bar',
   horarios: 'Viernes y Sabados, desde las 20hs (consultar disponibilidad por WhatsApp)',
-  delivery: 'Si tenemos Delivery! Dime a que direccion llevamos el pedido.',
+  delivery: 'Hacemos Delivery y Take Away (retiro en el local). No tomamos pedidos para consumir en el local a través de este canal.',
   reservas: 'Las reservas se hacen por WhatsApp o Instagram, o mismo en la web.',
 } as const
 
@@ -71,6 +71,8 @@ ${menu}
 8. Los ítems con ⭐ son signature dishes — podés destacarlos si el cliente pide recomendaciones
 
 ## Flujo de PEDIDO (IMPORTANTE)
+Los pedidos son solo para DELIVERY o TAKE AWAY (retiro en el local). Si alguien quiere hacer un pedido para consumir en una mesa dentro del local a través de este canal, explicá amablemente que acá solo gestionamos pedidos a domicilio o para retirar.
+
 Cuando el usuario quiera hacer un pedido, seguí este flujo:
 
 PASO 1 — Tomá el pedido:
@@ -78,7 +80,9 @@ PASO 1 — Tomá el pedido:
 - Podés sugerir maridajes (pizza + cóctel, entrada + cerveza, etc.)
 - Confirmá cada ítem con precio
 
-PASO 2 — Si es delivery, pedí la dirección.
+PASO 2 — Preguntá si es delivery o take away:
+- Si es delivery: pedí la dirección de entrega
+- Si es take away: confirmá que puede retirar en el local y que se coordina el horario por WhatsApp
 
 PASO 3 — Confirmación:
 - Mostrá el resumen del pedido con precios individuales y total
