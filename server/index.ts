@@ -1,7 +1,7 @@
 /**
  * server/index.ts
  *
- * Proxy minimalista hacia la API de Claude.
+ * Proxy minimalista hacia la API de Groq.
  * Mantiene la API key en el servidor — nunca expuesta al browser.
  *
  * En producción: este mismo servidor puede servir el build de Vite (dist/).
@@ -9,7 +9,7 @@
 
 import express from 'express'
 import cors from 'cors'
-import Anthropic from '@anthropic-ai/sdk'
+import Groq from 'groq-sdk'
 import 'dotenv/config'
 
 // ─── Setup ──────────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? 'http://localhost:5173'
 app.use(cors({ origin: ALLOWED_ORIGIN }))
 app.use(express.json({ limit: '64kb' }))
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -46,15 +46,13 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001', // Rápido y económico para chatbot
+    const response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
       max_tokens: 512,
-      system: systemPrompt,
-      messages,
+      messages: [{ role: 'system', content: systemPrompt }, ...messages],
     })
 
-    const text =
-      response.content[0].type === 'text' ? response.content[0].text : ''
+    const text = response.choices[0]?.message?.content ?? ''
 
     res.json({ text })
   } catch (error) {
