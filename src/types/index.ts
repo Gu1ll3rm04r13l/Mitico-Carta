@@ -73,3 +73,19 @@ export interface ChatMessage {
 
 /** Intent inicial que puede recibir el chat para pre-cargar un flujo */
 export type ChatIntent = 'order' | null
+
+// ─── Admin ─────────────────────────────────────────────────────────────────
+
+export interface AdminMenuItem {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  price: number
+  category: string
+  sort_order: number
+  available: boolean
+  is_signature: boolean
+  tags: string[]
+  image_url: string | null
+}
