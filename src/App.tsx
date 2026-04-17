@@ -13,7 +13,8 @@ import { supabase } from './lib/supabase'
 import type { ChatIntent } from './types'
 import type { Session } from '@supabase/supabase-js'
 
-const IS_ADMIN_ROUTE = new URLSearchParams(window.location.search).has('admin')
+const IS_ADMIN_ROUTE =
+  new URLSearchParams(window.location.search).get('access') === import.meta.env.VITE_ADMIN_TOKEN
 
 export default function App() {
   const [isReservationOpen, setIsReservationOpen] = useState(false)
