@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MENU_CATEGORIES } from '../data/menuData'
+import { useMenu } from '../hooks/useMenu'
 import type { MenuCategory, MenuItem } from '../types'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -105,9 +105,10 @@ interface MenuProps {
 }
 
 export default function Menu({ isOpen, onToggle }: MenuProps) {
-  const [activeId, setActiveId] = useState<MenuCategory['id']>(MENU_CATEGORIES[0].id)
+  const { categories, loading, error } = useMenu()
+  const [activeId, setActiveId] = useState<MenuCategory['id']>('entradas')
 
-  const activeCategory = MENU_CATEGORIES.find(c => c.id === activeId) || MENU_CATEGORIES[0]
+  const activeCategory = categories.find(c => c.id === activeId) ?? categories[0]
 
   return (
     <section id="menu" style={{ backgroundColor: '#0D0D0D', paddingTop: '5rem', paddingBottom: '6rem' }}>
@@ -179,7 +180,7 @@ export default function Menu({ isOpen, onToggle }: MenuProps) {
                 className="flex flex-nowrap md:flex-wrap gap-2 overflow-x-auto md:overflow-visible pb-4 md:pb-0 no-scrollbar -mx-5 px-5 md:mx-0 md:px-0"
                 role="tablist"
               >
-                {MENU_CATEGORIES.map(cat => (
+                {categories.map(cat => (
                   <CategoryTab
                     key={cat.id}
                     category={cat}
@@ -199,7 +200,17 @@ export default function Menu({ isOpen, onToggle }: MenuProps) {
               className="grid gap-4 animate-in fade-in duration-500"
               style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))' }}
             >
-              {activeCategory.items.map(item => (
+              {loading && (
+                <p className="col-span-full text-center py-10 text-sm" style={{ color: '#8A8070' }}>
+                  Cargando carta…
+                </p>
+              )}
+              {error && (
+                <p className="col-span-full text-center py-10 text-sm" style={{ color: '#E8622A' }}>
+                  No se pudo cargar la carta. Intentá de nuevo.
+                </p>
+              )}
+              {!loading && !error && activeCategory?.items.map(item => (
                 <MenuCard key={item.id} item={item} />
               ))}
             </div>
