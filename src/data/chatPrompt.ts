@@ -11,18 +11,21 @@ import { WHATSAPP_NUMBER } from '../hooks/useReservation'
 
 // ─── Serialización del menú ─────────────────────────────────────────────────
 
+// Descripciones que no aportan info útil (solo volumen/formato del envase)
+const SIMPLE_DESC = /^(Botella|Lata)\s+\d+\s*ml\.?$/i
+
 function formatMenuForPrompt(categories: MenuCategory[]): string {
   return categories
     .map(cat => {
       const items = cat.items
         .map(item => {
           const price = `$${item.price.toLocaleString('es-AR')}`
-          const tags = item.tags?.length ? ` [${item.tags.join(', ')}]` : ''
-          const signature = item.isSignature ? ' ⭐' : ''
-          return `  - ${item.name}${signature}: ${item.description} — ${price}${tags}`
+          const signature = item.isSignature ? '⭐' : ''
+          const desc = SIMPLE_DESC.test(item.description.trim()) ? '' : ` — ${item.description}`
+          return `${item.name}${signature} ${price}${desc}`
         })
         .join('\n')
-      return `### ${cat.label} ${cat.icon}\n${items}`
+      return `[${cat.label}]\n${items}`
     })
     .join('\n\n')
 }
@@ -60,13 +63,18 @@ Tu rol es atender clientes de forma cálida y directa, con el tono de un bar por
 
 ${menu}
 
+## Notas sobre bebidas
+- La línea de gaseosas disponible es **Pepsi** (Pepsi, Pepsi Black, 7up, 7up Free). NO tenemos Coca-Cola para la venta.
+- El Fernet Branca se prepara con Coca-Cola como cóctel, pero Coca-Cola NO se vende como bebida individual.
+- Si alguien pide Coca-Cola, ofrecé Pepsi como alternativa.
+
 ## Reglas generales
 1. Respondé SIEMPRE en español rioplatense — jamás usés la palabra "che"
 2. Sé breve y directo — máximo 3-4 oraciones
 3. Si preguntan por precios, mostrá solo los relevantes (no todo el menú de una)
 4. Para reservas, dirigí al formulario de la web o al WhatsApp: wa.me/${WHATSAPP_NUMBER}
 5. Si no sabés algo (disponibilidad, tiempo de entrega), decí que consulten por WhatsApp
-6. No inventes información — si no la tenés, derivá al WhatsApp
+6. **CRÍTICO — No inventes productos:** Solo podés ofrecer ítems que estén EXACTAMENTE en el menú de arriba. Si alguien pide algo que no figura (ej: Coca-Cola, litro y medio, agua saborizada de otra marca, etc.), respondé que no lo tenemos y ofrecé la alternativa más parecida del menú real. Nunca confirmes disponibilidad de un producto inventado.
 7. Usá emojis con moderación (máx 1 por mensaje)
 8. Los ítems con ⭐ son signature dishes — podés destacarlos si el cliente pide recomendaciones
 
