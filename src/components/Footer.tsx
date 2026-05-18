@@ -4,47 +4,31 @@ interface FooterProps {
 
 export default function Footer({ onCancelClick }: FooterProps) {
   return (
-    <footer
-      className="border-t"
-      style={{
-        backgroundColor: '#0D0D0D',
-        borderColor: 'rgba(245,230,200,0.08)',
-      }}
-    >
+    <footer className="border-t border-cream/8 bg-bg-deep">
       <div className="max-w-3xl mx-auto px-5 md:px-10 py-12">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-8">
 
-          {/* Marca y horarios */}
           <div className="flex flex-col gap-3">
-            <p
-              className="text-3xl uppercase leading-none"
-              style={{ fontFamily: '"Bebas Neue", sans-serif', color: '#F5E6C8' }}
-            >
+            <p className="text-3xl uppercase leading-none font-heading text-cream">
               Mítico
             </p>
-            <p className="text-sm" style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-sm text-muted font-body">
               Pizzería · Bar
             </p>
-            <div
-              className="text-sm space-y-0.5"
-              style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}
-            >
+            <div className="text-sm space-y-0.5 text-muted font-body">
               <p><strong>Invierno:</strong> Vie–Sáb 20:00 – 01:30</p>
               <p><strong>Finde largos:</strong> abierto días adicionales</p>
               <p><strong>Verano:</strong> abierto todos los días</p>
             </div>
           </div>
 
-          {/* Links y acción de cancelación */}
           <div className="flex flex-col gap-4">
-            {/* Redes */}
             <div className="flex flex-col gap-2">
               <a
                 href="https://instagram.com/mitico.bar"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm transition-colors hover:opacity-80"
-                style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}
+                className="flex items-center gap-1.5 text-sm text-muted font-body transition-colors hover:opacity-80"
                 aria-label="Instagram de Mítico"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -56,8 +40,7 @@ export default function Footer({ onCancelClick }: FooterProps) {
                 href="https://wa.me/5492235799301"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm transition-colors hover:opacity-80"
-                style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}
+                className="flex items-center gap-1.5 text-sm text-muted font-body transition-colors hover:opacity-80"
                 aria-label="WhatsApp de Mítico"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -67,19 +50,14 @@ export default function Footer({ onCancelClick }: FooterProps) {
               </a>
             </div>
 
-            {/* Cancelar reserva */}
-            <div
-              className="pt-3 border-t"
-              style={{ borderColor: 'rgba(245,230,200,0.08)' }}
-            >
-              <p className="text-xs mb-2" style={{ color: '#8A8070', fontFamily: 'Inter, sans-serif' }}>
+            <div className="pt-3 border-t border-cream/8">
+              <p className="text-xs mb-2 text-muted font-body">
                 ¿Tenés una reserva y no podés venir?
               </p>
               <button
                 type="button"
                 onClick={onCancelClick}
-                className="inline-flex items-center gap-1.5 text-sm font-medium transition-all hover:opacity-80 active:scale-[0.97]"
-                style={{ color: '#f87171', fontFamily: 'Inter, sans-serif' }}
+                className="inline-flex items-center gap-1.5 text-sm font-medium font-body text-red-400 transition-all hover:opacity-80 active:scale-[0.97]"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -90,11 +68,7 @@ export default function Footer({ onCancelClick }: FooterProps) {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div
-          className="mt-10 pt-6 border-t text-xs"
-          style={{ borderColor: 'rgba(245,230,200,0.06)', color: '#8A8070', fontFamily: 'Inter, sans-serif' }}
-        >
+        <div className="mt-10 pt-6 border-t border-cream/6 text-xs text-muted font-body">
           © {new Date().getFullYear()} Mítico · Todos los derechos reservados
         </div>
       </div>
