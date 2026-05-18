@@ -37,18 +37,17 @@ The app is a single-page landing for Mítico, a pizzería/bar. All source lives 
 
 ```
 types/index.ts              — Interfaces: MenuItem, MenuCategory, ReservationFormData, CancelFormData, ChatMessage, AdminMenuItem, etc.
-lib/supabase.ts             — Cliente Supabase (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
-data/menuData.ts            — Metadata estática de categorías (label, icon, id). Items vienen de Supabase.
-data/menu/                  — DEPRECATED — items estáticos, ignorar. La fuente real es Supabase.
-data/chatPrompt.ts          — System prompt del asistente (buildSystemPrompt())
-services/ai.ts              — sendChatMessage(): llama a /api/chat, desacoplado de componentes
+lib/supabase.ts             — Cliente Supabase frontend (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
+lib/timeSlots.ts            — TIME_SLOTS compartido por ReservationModal y CancelReservationModal
+services/ai.ts              — sendChatMessage(): llama a /api/chat (solo envía mensajes; el prompt se arma server-side)
 hooks/useMenu.ts            — Fetch de menu_items desde Supabase, agrupa por categoría → MenuCategory[]
-hooks/useReservation.ts     — Form state, validación, buildReservationMessage(), WHATSAPP_NUMBER, buildWhatsAppUrl()
+hooks/useReservation.ts     — Form state, validación (1-20 personas), buildReservationMessage(), WHATSAPP_NUMBER, buildWhatsAppUrl()
 hooks/useCancelReservation.ts — Misma estructura que useReservation pero para cancelaciones
 hooks/useChat.ts            — Mensajes, intent, ORDER_MARKER parser, pendingOrderUrl (WhatsApp)
 hooks/useAdminMenu.ts       — Fetch de todos los items (sin filtro RLS), toggleAvailable() con useOptimistic
 components/
   LogoM.tsx                 — Logo SVG flotante
+  ErrorBoundary.tsx         — Captura errores runtime en root (montado en main.tsx)
   Hero.tsx                  — Full-screen hero. Props: onReserveClick, onOrderClick, onMenuClick
   Menu.tsx                  — Tab-based menu. Props: isOpen, onToggle. Usa useMenu()
   ExperienceGallery.tsx     — Sección galería/experiencia
@@ -56,18 +55,21 @@ components/
   ReservationModal.tsx      — Portal modal de reserva. Usa useReservation internamente
   CancelReservationModal.tsx — Portal modal de cancelación. Usa useCancelReservation internamente
   ChatWidget.tsx            — Chat flotante. Props: isOpen, onOpenChange, intent, onIntentHandled
-  admin/AdminLogin.tsx      — Login con Supabase Auth (solo en ruta admin)
-  admin/AdminPanel.tsx      — Panel CRUD de carta (toggle available por ítem)
-App.tsx                     — Estado global: modales, chat, admin route. Compone todo.
-server/index.ts             — Express proxy para Groq (dev local, puerto 3001)
-api/chat.ts                 — Serverless function Vercel (/api/chat), usa Groq SDK
+  admin/AdminLogin.tsx      — Login con Supabase Auth (cargado con React.lazy)
+  admin/AdminPanel.tsx      — Panel CRUD de carta (cargado con React.lazy)
+App.tsx                     — Estado global: modales, chat, admin route. Admin con React.lazy + Suspense.
+server/_shared/supabase.ts  — Cliente Supabase server-side (SUPABASE_URL/ANON_KEY, fallback VITE_*)
+server/_shared/menuCache.ts — getMenu(): fetch Supabase con cache módulo TTL 60s + dedupe inflight
+server/_shared/buildPrompt.ts — buildSystemPrompt(categories): genera prompt del bot desde menú real
+server/index.ts             — Express proxy para Groq (dev local, puerto 3001). Arma prompt server-side.
+api/chat.ts                 — Serverless function Vercel (/api/chat). Misma lógica que Express.
 ```
 
 **Reservation flow:** Hero → `ReservationModal` → `useReservation.submit()` → genera mensaje WhatsApp → abre `https://wa.me/WHATSAPP_NUMBER?text=...`
 
 **Cancel flow:** Footer → `CancelReservationModal` → `useCancelReservation.submit()` → mismo patrón WhatsApp con mensaje de cancelación.
 
-**Chat flow:** Hero "Hacer pedido" → `ChatWidget` con `intent='order'` → mensajes a `/api/chat` (Vercel) o `:3001/api/chat` (dev) → Groq con `llama-3.3-70b-versatile` → si la IA incluye `[[PEDIDO:...]]`, `useChat` extrae el texto y genera `pendingOrderUrl` (WhatsApp con pedido pre-cargado).
+**Chat flow:** Hero "Hacer pedido" → `ChatWidget` con `intent='order'` → mensajes a `/api/chat` (Vercel) o `:3001/api/chat` (dev). El server lee menú de Supabase (cache módulo TTL 60s), arma el system prompt fresco con precios reales y lo pasa a Groq (`llama-3.3-70b-versatile`). Si la IA incluye `[[PEDIDO:...]]`, `useChat` extrae el texto y genera `pendingOrderUrl` (WhatsApp con pedido pre-cargado). **El frontend ya NO envía el prompt** — solo el array de mensajes. Cambios en el admin panel se reflejan en el bot dentro de 60s.
 
 **Admin flow:** `?access=VITE_ADMIN_TOKEN` → `AdminLogin` (Supabase Auth) → `AdminPanel` → `useAdminMenu` maneja fetch + `toggleAvailable()` con optimistic UI.
 
@@ -77,7 +79,8 @@ api/chat.ts                 — Serverless function Vercel (/api/chat), usa Groq
 
 - **Tabla:** `menu_items` — columnas: `id`, `slug`, `name`, `description`, `price`, `category`, `sort_order`, `available`, `is_signature`, `tags`, `image_url`, `created_at`, `updated_at`
 - **RLS:** anon solo lee `available = true`. Authenticated (dueño) tiene acceso total.
-- **Variables de entorno:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_ADMIN_TOKEN` (ver `.env.example`)
+- **Variables de entorno frontend:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_ADMIN_TOKEN`
+- **Variables de entorno server:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GROQ_API_KEY` (ver `.env.example`)
 - **Categorías en DB:** `entradas`, `cervezas`, `cocteles`, `vinos`, `sin-alcohol`, `pizzas`, `postres`, `sandwiches`, `panchos`, `empanadas`, `ensaladas` — `sin-alcohol` → `id: 'bebidas'` en el frontend (ver `CATEGORY_META` en `useMenu.ts`)
 
 ## Design tokens
@@ -103,5 +106,6 @@ In practice many components still use inline `style={{}}` for colors — prefer 
 - **No routing** — single page with anchor scroll (`href="#menu"`, `href="#reservas"`).
 - New page sections go in `src/components/`, imported and composed in `App.tsx`.
 - `WHATSAPP_NUMBER` y `buildWhatsAppUrl()` son constantes en `hooks/useReservation.ts` — reutilizables desde cualquier hook.
-- **Nunca editar precios/items en `data/menu/*.ts`** — esos archivos están deprecated. La fuente de verdad es Supabase.
+- **La fuente única de verdad de la carta es Supabase.** El frontend la lee con `useMenu`, el bot la lee server-side con `getMenu()` (cache TTL 60s). No existen items estáticos.
 - El panel admin se accede via `?access=TOKEN` (token en `VITE_ADMIN_TOKEN`), nunca hardcodeado.
+- Cuando agregues nuevos modales o secciones grandes, considerá `React.lazy()` si solo aplican a un subset de usuarios (ver AdminPanel).
