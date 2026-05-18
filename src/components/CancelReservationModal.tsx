@@ -1,25 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useCancelReservation } from '../hooks/useCancelReservation'
+import { TIME_SLOTS } from '../lib/timeSlots'
 import type { CancelFormData, CancelErrors } from '../types'
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
-
-function generateTimeSlots(): string[] {
-  const slots: string[] = []
-  const START_HOUR = 20
-  const END_HOUR = 23
-
-  for (let h = START_HOUR; h <= END_HOUR; h++) {
-    for (const m of [0, 30]) {
-      slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
-    }
-  }
-  slots.push("00:00")
-  return slots
-}
-
-const TIME_SLOTS = generateTimeSlots()
 
 // ─── Primitivos ─────────────────────────────────────────────────────────────
 

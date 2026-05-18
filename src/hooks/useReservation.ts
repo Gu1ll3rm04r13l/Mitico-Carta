@@ -3,12 +3,8 @@ import type { ReservationFormData, ReservationErrors, ReservationStatus } from '
 
 // ─── Configuración ─────────────────────────────────────────────────────────
 
-/**
- * Número de WhatsApp del local en formato internacional sin '+'.
- * Argentina: 54 + código de área sin 0 + número sin 15.
- * Ej: para 011-1234-5678 → 541112345678
- */
-export const WHATSAPP_NUMBER = '5492235799301' // TODO: reemplazar con el número real del local
+// WhatsApp formato internacional sin '+': 54 + área sin 0 + número sin 15
+export const WHATSAPP_NUMBER = '5492235799301'
 
 export function buildWhatsAppUrl(message: string): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
@@ -35,8 +31,8 @@ function validate(data: ReservationFormData): ReservationErrors {
     errors.name = 'Ingresá al menos 2 caracteres'
   }
 
-  if (data.guests < 1 || data.guests > 30) {
-    errors.guests = 'Debe ser entre 1 y 20 personas'
+  if (data.guests < 1 || data.guests > 20) {
+    errors.guests = 'Entre 1 y 20 personas. Para grupos mayores, escribinos por WhatsApp o Instagram.'
   }
 
   if (!data.date) {

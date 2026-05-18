@@ -1,30 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useReservation } from '../hooks/useReservation'
+import { TIME_SLOTS } from '../lib/timeSlots'
 import type { ReservationFormData, ReservationErrors } from '../types'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-
-function generateTimeSlots(): string[] {
-  const slots: string[] = []
-  const START_HOUR = 20
-  const END_HOUR = 23 // Hasta las 23:30
-
-  for (let h = START_HOUR; h <= END_HOUR; h++) {
-    for (const m of [0, 30]) {
-      const hour = String(h).padStart(2, '0');
-      const minute = String(m).padStart(2, '0');
-      slots.push(`${hour}:${minute}`);
-    }
-  }
-  
-  // Agregamos la medianoche como última opción
-  slots.push("00:00")
-  
-  return slots
-}
-
-const TIME_SLOTS = generateTimeSlots()
 
 function todayISO(): string {
   return new Date().toISOString().split('T')[0]
