@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <radialGradient id="warmGlow" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="#E8622A" stop-opacity="0.18"/>
+      <stop offset="55%" stop-color="#0D0D0D" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vignette" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0D0D0D"/>
+  <rect width="1200" height="630" fill="url(#warmGlow)"/>
+
+  <!-- Decorative grain dots (subtle) -->
+  <g fill="#F5E6C8" opacity="0.04">
+    <circle cx="120" cy="90" r="1.5"/>
+    <circle cx="280" cy="540" r="1"/>
+    <circle cx="1020" cy="120" r="1.5"/>
+    <circle cx="980" cy="500" r="1"/>
+    <circle cx="640" cy="60" r="1"/>
+    <circle cx="640" cy="580" r="1"/>
+  </g>
+
+  <!-- Top accent line -->
+  <rect x="500" y="148" width="200" height="2" fill="#E8622A"/>
+
+  <!-- Eyebrow -->
+  <text
+    x="600" y="195"
+    text-anchor="middle"
+    font-family="Inter, Helvetica, Arial, sans-serif"
+    font-size="20"
+    font-weight="600"
+    letter-spacing="8"
+    fill="#E8622A"
+  >PIZZERÍA &#38; COCKTAIL</text>
+
+  <!-- Main lettermark -->
+  <text
+    x="600" y="385"
+    text-anchor="middle"
+    font-family="'Bodoni Moda', 'Bodoni MT', Georgia, 'Times New Roman', serif"
+    font-size="220"
+    font-weight="400"
+    letter-spacing="-4"
+    fill="#F5E6C8"
+  >Mítico</text>
+
+  <!-- Tagline -->
+  <text
+    x="600" y="450"
+    text-anchor="middle"
+    font-family="'Bodoni Moda', Georgia, serif"
+    font-style="italic"
+    font-size="28"
+    fill="#F5E6C8"
+    opacity="0.7"
+  >Pizza de masa madre &#38; bebidas con criterio</text>
+
+  <!-- Bottom row: city + handle -->
+  <rect x="500" y="500" width="200" height="1" fill="#F5E6C8" opacity="0.2"/>
+
+  <text
+    x="600" y="545"
+    text-anchor="middle"
+    font-family="Inter, Helvetica, Arial, sans-serif"
+    font-size="18"
+    font-weight="500"
+    letter-spacing="6"
+    fill="#F5E6C8"
+    opacity="0.65"
+  >MIRAMAR · @MITICO.BAR</text>
+
+  <!-- Subtle vignette overlay -->
+  <rect width="1200" height="630" fill="url(#vignette)"/>
+</svg>

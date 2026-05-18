@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /?access=
+
+Sitemap: https://mitico.bar/sitemap.xml
