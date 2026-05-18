@@ -1,17 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { ChatMessage, ChatIntent } from '../types'
 import { sendChatMessage } from '../services/ai'
-import { buildSystemPrompt } from '../data/chatPrompt'
 import { WHATSAPP_NUMBER } from './useReservation'
-
-// Construido una sola vez al cargar el módulo — el menú es estático.
-const SYSTEM_PROMPT = buildSystemPrompt()
 
 // Marcador que el AI incluye cuando el pedido está confirmado.
 const ORDER_MARKER_RE = /\[\[PEDIDO:([\s\S]*?)\]\]/
 
 // Máximo de mensajes que se mandan como contexto a la API.
-const MAX_CONTEXT_MESSAGES = 12
+const MAX_CONTEXT_MESSAGES = 6
 
 const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome',
@@ -97,7 +93,7 @@ export function useChat(intent: ChatIntent = null): UseChatReturn {
         .map(m => ({ role: m.role, content: m.content }))
 
       try {
-        const responseText = await sendChatMessage(historyForApi, SYSTEM_PROMPT)
+        const responseText = await sendChatMessage(historyForApi)
 
         const { visible, orderText } = parseOrderMarker(responseText)
 

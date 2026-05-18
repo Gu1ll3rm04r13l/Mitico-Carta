@@ -1,25 +1,13 @@
-/**
- * ai.ts
- *
- * Capa de servicio para comunicación con la API de IA.
- * Desacoplada del componente — swappeable para WhatsApp u otro canal en el futuro.
- */
-
 export interface ApiChatMessage {
   role: 'user' | 'assistant'
   content: string
 }
 
-// ─── Chat ───────────────────────────────────────────────────────────────────
-
-export async function sendChatMessage(
-  messages: ApiChatMessage[],
-  systemPrompt: string,
-): Promise<string> {
+export async function sendChatMessage(messages: ApiChatMessage[]): Promise<string> {
   const response = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, systemPrompt }),
+    body: JSON.stringify({ messages }),
   })
 
   if (!response.ok) {
