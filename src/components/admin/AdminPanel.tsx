@@ -1,22 +1,11 @@
 import { useTransition, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAdminMenu } from '../../hooks/useAdminMenu'
+import { CATEGORY_LABELS } from '../../lib/categories'
 import ItemFormModal from './ItemFormModal'
+import BulkPriceModal from './BulkPriceModal'
+import ImportExportBar from './ImportExportBar'
 import type { AdminMenuItem, AdminMenuItemInput } from '../../types'
-
-const CATEGORY_LABELS: Record<string, { label: string; icon: string }> = {
-  entradas:      { label: 'Entradas',    icon: '🧀' },
-  cervezas:      { label: 'Cervezas',    icon: '🍺' },
-  cocteles:      { label: 'Cócteles',    icon: '🍸' },
-  vinos:         { label: 'Vinos',       icon: '🍷' },
-  'sin-alcohol': { label: 'Sin Alcohol', icon: '🥤' },
-  pizzas:        { label: 'Pizzas',      icon: '🍕' },
-  postres:       { label: 'Postres',     icon: '🍮' },
-  sandwiches:    { label: 'Sandwiches',  icon: '🥪' },
-  panchos:       { label: 'Panchos',     icon: '🌭' },
-  empanadas:     { label: 'Empanadas',   icon: '🥟' },
-  ensaladas:     { label: 'Ensaladas',   icon: '🥗' },
-}
 
 // ─── AvailableToggle ────────────────────────────────────────────────────────
 
@@ -143,12 +132,14 @@ function CategorySection({
   onToggle,
   onEdit,
   onDelete,
+  onDeleteCategory,
 }: {
   catKey: string
   items: AdminMenuItem[]
   onToggle: (id: string, current: boolean) => Promise<void>
   onEdit: (item: AdminMenuItem) => void
   onDelete: (item: AdminMenuItem) => void
+  onDeleteCategory: (catKey: string) => void
 }) {
   const [open, setOpen] = useState(true)
   const meta = CATEGORY_LABELS[catKey]
@@ -156,27 +147,43 @@ function CategorySection({
 
   return (
     <section>
-      <button
-        type="button"
-        onClick={() => setOpen(prev => !prev)}
-        className="w-full flex items-center justify-between mb-2 px-1 group"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{meta?.icon}</span>
-          <h2 className="text-cream font-heading text-xl tracking-wider">{meta?.label ?? catKey}</h2>
-          <span
-            className={[
-              'text-muted transition-transform duration-200 text-xs ml-1',
-              open ? 'rotate-0' : '-rotate-90',
-            ].join(' ')}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onDeleteCategory(catKey)}
+            aria-label={`Eliminar categoría ${meta?.label ?? catKey}`}
+            title="Eliminar categoría y todos sus productos"
+            className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors shrink-0"
           >
-            ▾
-          </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen(prev => !prev)}
+            className="flex items-center gap-2 group"
+          >
+            <span className="text-lg">{meta?.icon}</span>
+            <h2 className="text-cream font-heading text-xl tracking-wider">{meta?.label ?? catKey}</h2>
+            <span
+              className={[
+                'text-muted transition-transform duration-200 text-base ml-1',
+                open ? 'rotate-0' : '-rotate-90',
+              ].join(' ')}
+            >
+              ▾
+            </span>
+          </button>
         </div>
         <span className="text-muted text-xs">
           {activeCount}/{items.length} activos
         </span>
-      </button>
+      </div>
 
       {open && (
         <div className="bg-bg-card rounded-2xl overflow-hidden border border-white/5 divide-y divide-white/5">
@@ -246,13 +253,70 @@ function DeleteConfirmModal({
   )
 }
 
+// ─── CategoryDeleteConfirmModal ───────────────────────────────────────────────
+
+function CategoryDeleteConfirmModal({
+  label,
+  count,
+  deleting,
+  onConfirm,
+  onCancel,
+}: {
+  label: string
+  count: number
+  deleting: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="w-full max-w-sm bg-bg-card rounded-2xl border border-white/10 shadow-2xl p-6 flex flex-col gap-5">
+        <div>
+          <h3 className="font-heading text-xl text-cream tracking-wide mb-1">Eliminar categoría</h3>
+          <p className="text-muted text-sm font-body leading-relaxed">
+            Vas a eliminar la categoría <span className="text-cream font-medium">{label}</span> y sus{' '}
+            <span className="text-red-400 font-medium">{count} producto{count === 1 ? '' : 's'}</span>.
+            Esta acción no se puede deshacer.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-muted hover:text-cream text-sm font-body transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={deleting}
+            className="flex-1 px-4 py-2.5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white text-sm font-body transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {deleting ? (
+              <>
+                <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Eliminando…
+              </>
+            ) : (
+              `Eliminar ${count} ítem${count === 1 ? '' : 's'}`
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── AdminPanel ───────────────────────────────────────────────────────────────
 
 export default function AdminPanel() {
-  const { grouped, loading, mutating, error, toggleAvailable, insertItem, updateItem, deleteItem, refetch } = useAdminMenu()
+  const { grouped, allItems, loading, mutating, error, toggleAvailable, insertItem, updateItem, deleteItem, deleteCategory, bulkUpdatePrices, bulkImport, refetch } = useAdminMenu()
 
   const [formItem, setFormItem] = useState<AdminMenuItem | null | 'new'>(null)
   const [deleteTarget, setDeleteTarget] = useState<AdminMenuItem | null>(null)
+  const [deleteCatTarget, setDeleteCatTarget] = useState<string | null>(null)
+  const [bulkOpen, setBulkOpen] = useState(false)
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -272,6 +336,12 @@ export default function AdminPanel() {
     if (!deleteTarget) return
     await deleteItem(deleteTarget.id)
     setDeleteTarget(null)
+  }
+
+  async function handleDeleteCategoryConfirm() {
+    if (!deleteCatTarget) return
+    await deleteCategory(deleteCatTarget)
+    setDeleteCatTarget(null)
   }
 
   if (loading) {
@@ -298,17 +368,26 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-bg-deep font-body">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-bg-deep/95 backdrop-blur border-b border-white/5 px-4 py-4 flex items-center justify-between gap-3">
-        <div>
-          <a
-            href="/"
-            className="font-heading text-3xl text-cream tracking-widest leading-none hover:text-accent transition-colors"
+      <header className="sticky top-0 z-10 bg-bg-deep/95 backdrop-blur border-b border-white/5 px-4 py-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <a
+              href="/"
+              className="font-heading text-3xl text-cream tracking-widest leading-none hover:text-accent transition-colors"
+            >
+              MÍTICO
+            </a>
+            <p className="text-muted text-xs mt-0.5">Gestión de carta</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="text-muted hover:text-cream text-xs transition-colors px-3 py-2 rounded-lg hover:bg-white/5 shrink-0"
           >
-            MÍTICO
-          </a>
-          <p className="text-muted text-xs mt-0.5">Gestión de carta</p>
+            Salir
+          </button>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Acciones — se apilan/envuelven en mobile (375px) */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setFormItem('new')}
             className="flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-white text-xs font-body font-medium px-3 py-2 rounded-xl transition-colors"
@@ -319,11 +398,17 @@ export default function AdminPanel() {
             Nuevo producto
           </button>
           <button
-            onClick={handleLogout}
-            className="text-muted hover:text-cream text-xs transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
+            onClick={() => setBulkOpen(true)}
+            className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-cream text-xs font-body font-medium px-3 py-2 rounded-xl transition-colors border border-white/10"
           >
-            Salir
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="19" y1="5" x2="5" y2="19" />
+              <circle cx="6.5" cy="6.5" r="2.5" />
+              <circle cx="17.5" cy="17.5" r="2.5" />
+            </svg>
+            Aumentar precios %
           </button>
+          <ImportExportBar items={allItems} saving={mutating} onImport={bulkImport} />
         </div>
       </header>
 
@@ -331,6 +416,7 @@ export default function AdminPanel() {
       <div className="px-4 pt-5 pb-2">
         <p className="text-muted text-xs leading-relaxed">
           Activá o desactivá ítems según disponibilidad. Los cambios se reflejan en la carta al instante.
+          Para editar precios en masa usá <span className="text-cream">Aumentar precios %</span> o exportá/importá un <span className="text-cream">Excel (.xlsx)</span>.
         </p>
       </div>
 
@@ -344,6 +430,7 @@ export default function AdminPanel() {
             onToggle={toggleAvailable}
             onEdit={item => setFormItem(item)}
             onDelete={item => setDeleteTarget(item)}
+            onDeleteCategory={key => setDeleteCatTarget(key)}
           />
         ))}
       </div>
@@ -365,6 +452,27 @@ export default function AdminPanel() {
           deleting={mutating}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {/* Category delete confirmation */}
+      {deleteCatTarget && (
+        <CategoryDeleteConfirmModal
+          label={CATEGORY_LABELS[deleteCatTarget]?.label ?? deleteCatTarget}
+          count={grouped[deleteCatTarget]?.length ?? 0}
+          deleting={mutating}
+          onConfirm={handleDeleteCategoryConfirm}
+          onCancel={() => setDeleteCatTarget(null)}
+        />
+      )}
+
+      {/* Bulk price editor */}
+      {bulkOpen && (
+        <BulkPriceModal
+          items={allItems}
+          saving={mutating}
+          onApply={bulkUpdatePrices}
+          onClose={() => setBulkOpen(false)}
         />
       )}
     </div>

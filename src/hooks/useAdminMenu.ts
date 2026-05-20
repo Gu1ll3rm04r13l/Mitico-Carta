@@ -4,6 +4,20 @@ import type { AdminMenuItem, AdminMenuItemInput } from '../types'
 
 type ToggleAction = { id: string; available: boolean }
 
+/** Ejecuta una operación async sobre items en lotes secuenciales. Lanza si alguno falla. */
+async function runInChunks<T>(
+  items: T[],
+  size: number,
+  op: (item: T) => PromiseLike<{ error: { message: string } | null }>,
+): Promise<void> {
+  for (let i = 0; i < items.length; i += size) {
+    const chunk = items.slice(i, i + size)
+    const results = await Promise.all(chunk.map(op))
+    const failed = results.find(r => r.error)
+    if (failed?.error) throw new Error(failed.error.message)
+  }
+}
+
 function toSlug(name: string): string {
   return name
     .toLowerCase()
@@ -125,6 +139,52 @@ export function useAdminMenu() {
     }
   }
 
+  /** Borra TODOS los productos de una categoría. Acción destructiva. */
+  async function deleteCategory(category: string): Promise<void> {
+    setMutating(true)
+    try {
+      const { error } = await supabase.from('menu_items').delete().eq('category', category)
+      if (error) throw new Error(error.message)
+      await fetchAll()
+    } finally {
+      setMutating(false)
+    }
+  }
+
+  /** Actualiza precios en masa (un UPDATE por id, en lotes para no saturar). */
+  async function bulkUpdatePrices(updates: { id: string; price: number }[]): Promise<void> {
+    if (updates.length === 0) return
+    setMutating(true)
+    try {
+      await runInChunks(updates, 20, ({ id, price }) =>
+        supabase
+          .from('menu_items')
+          .update({ price, updated_at: new Date().toISOString() })
+          .eq('id', id),
+      )
+      await fetchAll()
+    } finally {
+      setMutating(false)
+    }
+  }
+
+  /** Aplica un import CSV: update por id de los campos provistos. */
+  async function bulkImport(rows: { id: string; input: Partial<AdminMenuItemInput> }[]): Promise<void> {
+    if (rows.length === 0) return
+    setMutating(true)
+    try {
+      await runInChunks(rows, 20, ({ id, input }) =>
+        supabase
+          .from('menu_items')
+          .update({ ...input, updated_at: new Date().toISOString() })
+          .eq('id', id),
+      )
+      await fetchAll()
+    } finally {
+      setMutating(false)
+    }
+  }
+
   const grouped = optimisticItems.reduce<Record<string, AdminMenuItem[]>>((acc, item) => {
     const list = acc[item.category] ?? []
     list.push(item)
@@ -134,6 +194,7 @@ export function useAdminMenu() {
 
   return {
     grouped,
+    allItems: items,
     loading,
     mutating,
     error,
@@ -141,6 +202,9 @@ export function useAdminMenu() {
     insertItem,
     updateItem,
     deleteItem,
+    deleteCategory,
+    bulkUpdatePrices,
+    bulkImport,
     refetch: fetchAll,
   }
 }
