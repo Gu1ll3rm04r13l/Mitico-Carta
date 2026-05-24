@@ -8,7 +8,7 @@ interface HeroProps {
 
 export default function Hero({ onReserveClick, onOrderClick, onMenuClick }: HeroProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-bg-deep">
+    <section className="relative min-h-dvh flex items-center justify-center overflow-hidden bg-bg-deep">
       <div className="absolute inset-0 z-0">
         <img
           src={HERO_IMAGE}

@@ -40,7 +40,7 @@ const inputBase = (hasError: boolean): React.CSSProperties => ({
   border: `1px solid ${hasError ? '#f87171' : 'rgba(245,230,200,0.12)'}`,
   borderRadius: '8px',
   padding: '10px 14px',
-  fontSize: '15px',
+  fontSize: '16px',
   fontFamily: 'Inter, sans-serif',
   outline: 'none',
   transition: 'border-color 0.15s',
@@ -85,7 +85,7 @@ function FormView({ form, errors, isSubmitting, firstInputRef, updateField, onSu
             aria-label="Reducir personas"
             onClick={() => updateField('guests', Math.max(1, form.guests - 1))}
             disabled={form.guests <= 1}
-            className="w-10 h-10 rounded-lg text-lg font-bold transition-colors flex items-center justify-center"
+            className="w-11 h-11 rounded-lg text-lg font-bold transition-colors flex items-center justify-center"
             style={{
               backgroundColor: 'rgba(245,230,200,0.08)',
               color: form.guests <= 1 ? '#8A8070' : '#F5E6C8',
@@ -107,7 +107,7 @@ function FormView({ form, errors, isSubmitting, firstInputRef, updateField, onSu
             aria-label="Aumentar personas"
             onClick={() => updateField('guests', Math.min(20, form.guests + 1))}
             disabled={form.guests >= 20}
-            className="w-10 h-10 rounded-lg text-lg font-bold transition-colors flex items-center justify-center"
+            className="w-11 h-11 rounded-lg text-lg font-bold transition-colors flex items-center justify-center"
             style={{
               backgroundColor: 'rgba(245,230,200,0.08)',
               color: form.guests >= 20 ? '#8A8070' : '#F5E6C8',
@@ -283,7 +283,7 @@ export default function ReservationModal({ onClose }: Props) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.80)' }}
       onClick={e => { if (e.target === e.currentTarget) handleClose() }}
       role="dialog"
@@ -291,8 +291,8 @@ export default function ReservationModal({ onClose }: Props) {
       aria-label="Formulario de reserva"
     >
       <div
-        className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-y-auto"
-        style={{ backgroundColor: '#1A1A1A', maxHeight: '92dvh' }}
+        className="w-full max-w-md rounded-2xl overflow-y-auto"
+        style={{ backgroundColor: '#1A1A1A', maxHeight: '90dvh' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -315,7 +315,7 @@ export default function ReservationModal({ onClose }: Props) {
           </div>
           <button
             onClick={handleClose}
-            className="flex items-center justify-center w-9 h-9 rounded-full transition-colors hover:bg-white/10"
+            className="flex items-center justify-center w-11 h-11 rounded-full transition-colors hover:bg-white/10"
             aria-label="Cerrar"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#8A8070" strokeWidth={2}>

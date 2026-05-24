@@ -61,3 +61,27 @@ body {
   0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
   30%           { transform: translateY(-4px); opacity: 1; }
 }
+
+/* ─── Utilities ───────────────────────────────────────────────────────────── */
+
+/* Oculta scrollbar manteniendo el scroll (tira de tabs en móvil) */
+.no-scrollbar {
+  -ms-overflow-style: none;   /* IE/Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari */
+}
+
+/* ─── Accesibilidad: reduce motion ────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -73,7 +73,7 @@ function CategoryTab({ category, isActive, onClick }: CategoryTabProps) {
       aria-selected={isActive}
       onClick={onClick}
       // shrink-0 para móvil, pero permitimos crecer/encoger en desktop si es necesario
-      className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 md:shrink border"
+      className="flex items-center gap-1.5 px-5 min-h-[44px] rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 md:shrink border"
       style={
         isActive
           ? { 
@@ -122,7 +122,7 @@ export default function Menu({ isOpen, onToggle }: MenuProps) {
           >
             Nuestra propuesta
           </span>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2
               className="leading-none uppercase"
               style={{
@@ -137,7 +137,7 @@ export default function Menu({ isOpen, onToggle }: MenuProps) {
               onClick={onToggle}
               aria-expanded={isOpen}
               aria-controls="menu-body"
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase border transition-colors duration-200"
+              className="flex items-center gap-1.5 self-start sm:self-auto px-4 min-h-[44px] rounded-full text-xs font-semibold tracking-widest uppercase border transition-colors duration-200"
               style={{
                 fontFamily: 'Inter, sans-serif',
                 color: isOpen ? '#8A8070' : '#E8622A',
@@ -197,7 +197,7 @@ export default function Menu({ isOpen, onToggle }: MenuProps) {
             <div
               role="tabpanel"
               key={activeId}
-              className="grid gap-4 animate-in fade-in duration-500"
+              className="grid gap-4"
               style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))' }}
             >
               {loading && (

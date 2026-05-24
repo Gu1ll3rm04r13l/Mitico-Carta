@@ -28,7 +28,7 @@ export default function Footer({ onCancelClick }: FooterProps) {
                 href="https://instagram.com/mitico.bar"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-muted font-body transition-colors hover:opacity-80"
+                className="flex items-center gap-1.5 min-h-[44px] text-sm text-muted font-body transition-colors hover:opacity-80"
                 aria-label="Instagram de Mítico"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -40,7 +40,7 @@ export default function Footer({ onCancelClick }: FooterProps) {
                 href="https://wa.me/5492235799301"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-muted font-body transition-colors hover:opacity-80"
+                className="flex items-center gap-1.5 min-h-[44px] text-sm text-muted font-body transition-colors hover:opacity-80"
                 aria-label="WhatsApp de Mítico"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -57,7 +57,7 @@ export default function Footer({ onCancelClick }: FooterProps) {
               <button
                 type="button"
                 onClick={onCancelClick}
-                className="inline-flex items-center gap-1.5 text-sm font-medium font-body text-red-400 transition-all hover:opacity-80 active:scale-[0.97]"
+                className="inline-flex items-center gap-1.5 min-h-[44px] text-sm font-medium font-body text-red-400 transition-all hover:opacity-80 active:scale-[0.97]"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
