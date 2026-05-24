@@ -1,4 +1,4 @@
-import type { ServerMenuCategory } from './menuCache'
+import type { ServerMenuCategory } from './menuCache.js'
 
 const WHATSAPP_NUMBER = '5492235799301'
 

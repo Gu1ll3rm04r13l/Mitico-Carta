@@ -1,4 +1,4 @@
-import { supabaseServer } from './supabase'
+import { supabaseServer } from './supabase.js'
 
 export interface ServerMenuItem {
   name: string

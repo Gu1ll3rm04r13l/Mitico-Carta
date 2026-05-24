@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getMenu } from './_lib/menuCache'
-import { buildSystemPrompt } from './_lib/buildPrompt'
+import { getMenu } from './_lib/menuCache.js'
+import { buildSystemPrompt } from './_lib/buildPrompt.js'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
