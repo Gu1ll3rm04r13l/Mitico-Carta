@@ -67,9 +67,10 @@ src/
   services/ai.ts     sendChatMessage() → /api/chat
   types/index.ts     Interfaces compartidas
 server/
-  index.ts           Proxy Express para Groq (dev local)
-  _shared/           Cliente Supabase, cache del menú (TTL 60s), buildPrompt
-api/chat.ts          Serverless function de Vercel (misma lógica que Express)
+  index.ts           Proxy Express para Groq (dev local), importa shared desde ../api/_lib
+api/
+  chat.ts            Serverless function de Vercel (/api/chat)
+  _lib/              Cliente Supabase, cache del menú (TTL 60s), buildPrompt — empaquetado por Vercel
 ```
 
 ### Flujos principales

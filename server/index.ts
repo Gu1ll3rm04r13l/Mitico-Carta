@@ -2,8 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import Groq from 'groq-sdk'
 import 'dotenv/config'
-import { getMenu } from './_shared/menuCache'
-import { buildSystemPrompt } from './_shared/buildPrompt'
+import { getMenu } from '../api/_lib/menuCache'
+import { buildSystemPrompt } from '../api/_lib/buildPrompt'
 
 const app = express()
 const PORT = Number(process.env.PORT ?? 3001)

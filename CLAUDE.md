@@ -58,11 +58,11 @@ components/
   admin/AdminLogin.tsx      — Login con Supabase Auth (cargado con React.lazy)
   admin/AdminPanel.tsx      — Panel CRUD de carta (cargado con React.lazy)
 App.tsx                     — Estado global: modales, chat, admin route. Admin con React.lazy + Suspense.
-server/_shared/supabase.ts  — Cliente Supabase server-side (SUPABASE_URL/ANON_KEY, fallback VITE_*)
-server/_shared/menuCache.ts — getMenu(): fetch Supabase con cache módulo TTL 60s + dedupe inflight
-server/_shared/buildPrompt.ts — buildSystemPrompt(categories): genera prompt del bot desde menú real
-server/index.ts             — Express proxy para Groq (dev local, puerto 3001). Arma prompt server-side.
-api/chat.ts                 — Serverless function Vercel (/api/chat). Misma lógica que Express.
+api/_lib/supabase.ts        — Cliente Supabase server-side (SUPABASE_URL/ANON_KEY, fallback VITE_*)
+api/_lib/menuCache.ts       — getMenu(): fetch Supabase con cache módulo TTL 60s + dedupe inflight
+api/_lib/buildPrompt.ts     — buildSystemPrompt(categories): genera prompt del bot desde menú real
+api/chat.ts                 — Serverless function Vercel (/api/chat). Importa shared desde ./_lib.
+server/index.ts             — Express proxy para Groq (dev local, puerto 3001). Importa shared desde ../api/_lib.
 ```
 
 **Reservation flow:** Hero → `ReservationModal` → `useReservation.submit()` → genera mensaje WhatsApp → abre `https://wa.me/WHATSAPP_NUMBER?text=...`
