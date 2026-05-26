@@ -1,6 +1,7 @@
 import { useEffect, useState, useOptimistic, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import type { AdminMenuItem, AdminMenuItemInput } from '../types'
+import { toSlug } from '../lib/slug'
+import type { AdminMenuItem, AdminMenuItemInput, Category } from '../types'
 
 type ToggleAction = { id: string; available: boolean }
 
@@ -18,19 +19,9 @@ async function runInChunks<T>(
   }
 }
 
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .trim()
-}
-
 export function useAdminMenu() {
   const [items, setItems] = useState<AdminMenuItem[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [mutating, setMutating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -48,17 +39,24 @@ export function useAdminMenu() {
   async function fetchAll() {
     setLoading(true)
     setError(null)
-    const { data, error } = await supabase
-      .from('menu_items')
-      .select('id, slug, name, description, price, category, sort_order, available, is_signature, tags, image_url')
-      .order('category')
-      .order('sort_order')
+    const [catRes, itemRes] = await Promise.all([
+      supabase
+        .from('categories')
+        .select('key, label, icon, sort_order')
+        .order('sort_order'),
+      supabase
+        .from('menu_items')
+        .select('id, slug, name, description, price, category, sort_order, available, is_signature, tags, image_url')
+        .order('category')
+        .order('sort_order'),
+    ])
 
-    if (error) {
-      setError(error.message)
-    } else {
-      setItems(data as AdminMenuItem[])
-    }
+    if (catRes.error) setError(catRes.error.message)
+    else setCategories(catRes.data as Category[])
+
+    if (itemRes.error) setError(itemRes.error.message)
+    else setItems(itemRes.data as AdminMenuItem[])
+
     setLoading(false)
   }
 
@@ -139,12 +137,69 @@ export function useAdminMenu() {
     }
   }
 
-  /** Borra TODOS los productos de una categoría. Acción destructiva. */
-  async function deleteCategory(category: string): Promise<void> {
+  /** Crea una categoría nueva. key auto-derivado del label; sort_order = max+1. */
+  async function insertCategory(label: string, icon: string): Promise<void> {
     setMutating(true)
     try {
-      const { error } = await supabase.from('menu_items').delete().eq('category', category)
+      const key = toSlug(label)
+      if (!key) throw new Error('El nombre de la categoría no es válido.')
+      const maxOrder = categories.reduce((m, c) => Math.max(m, c.sort_order), -1)
+      const { error } = await supabase
+        .from('categories')
+        .insert({ key, label, icon, sort_order: maxOrder + 1 })
+      if (error) {
+        throw new Error(error.code === '23505'
+          ? 'Ya existe una categoría con ese nombre.'
+          : error.message)
+      }
+      await fetchAll()
+    } finally {
+      setMutating(false)
+    }
+  }
+
+  /** Edita label e icono de una categoría (el key es inmutable). */
+  async function updateCategory(key: string, patch: { label: string; icon: string }): Promise<void> {
+    setMutating(true)
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ ...patch, updated_at: new Date().toISOString() })
+        .eq('key', key)
       if (error) throw new Error(error.message)
+      await fetchAll()
+    } finally {
+      setMutating(false)
+    }
+  }
+
+  /**
+   * Borra una categoría. Los items en `reassignIds` se mueven a `targetKey`;
+   * el resto de items de la categoría se eliminan; luego se borra la fila de la categoría.
+   * El orden respeta el FK ON DELETE RESTRICT.
+   */
+  async function deleteCategoryWithReassign(
+    key: string,
+    opts: { reassignIds: string[]; targetKey: string | null },
+  ): Promise<void> {
+    setMutating(true)
+    try {
+      const { reassignIds, targetKey } = opts
+      if (reassignIds.length > 0) {
+        if (!targetKey) throw new Error('Elegí una categoría destino para los productos a conservar.')
+        await runInChunks(reassignIds, 20, id =>
+          supabase
+            .from('menu_items')
+            .update({ category: targetKey, updated_at: new Date().toISOString() })
+            .eq('id', id),
+        )
+      }
+      // Borra los items que quedaron en esta categoría (los no reasignados).
+      const { error: delItemsErr } = await supabase.from('menu_items').delete().eq('category', key)
+      if (delItemsErr) throw new Error(delItemsErr.message)
+      // Ahora sí, borra la categoría (FK satisfecho).
+      const { error: delCatErr } = await supabase.from('categories').delete().eq('key', key)
+      if (delCatErr) throw new Error(delCatErr.message)
       await fetchAll()
     } finally {
       setMutating(false)
@@ -194,6 +249,7 @@ export function useAdminMenu() {
 
   return {
     grouped,
+    categories,
     allItems: items,
     loading,
     mutating,
@@ -202,7 +258,9 @@ export function useAdminMenu() {
     insertItem,
     updateItem,
     deleteItem,
-    deleteCategory,
+    insertCategory,
+    updateCategory,
+    deleteCategoryWithReassign,
     bulkUpdatePrices,
     bulkImport,
     refetch: fetchAll,
