@@ -1,26 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { AdminMenuItem, AdminMenuItemInput } from '../../types'
+import type { AdminMenuItem, AdminMenuItemInput, Category } from '../../types'
 
-const CATEGORIES = [
-  { value: 'entradas',     label: 'Entradas'     },
-  { value: 'pizzas',       label: 'Pizzas'       },
-  { value: 'sandwiches',   label: 'Sandwiches'   },
-  { value: 'panchos',      label: 'Panchos'      },
-  { value: 'empanadas',    label: 'Empanadas'    },
-  { value: 'ensaladas',    label: 'Ensaladas'    },
-  { value: 'postres',      label: 'Postres'      },
-  { value: 'cervezas',     label: 'Cervezas'     },
-  { value: 'cocteles',     label: 'Cócteles'     },
-  { value: 'vinos',        label: 'Vinos'        },
-  { value: 'sin-alcohol',  label: 'Sin Alcohol'  },
-]
-
-const EMPTY_FORM: AdminMenuItemInput = {
+const EMPTY_FORM: Omit<AdminMenuItemInput, 'category'> = {
   name: '',
   description: null,
   price: 0,
-  category: 'pizzas',
   sort_order: 0,
   available: true,
   is_signature: false,
@@ -44,12 +29,13 @@ function labelClass() {
 
 interface Props {
   item?: AdminMenuItem | null
+  categories: Category[]
   saving: boolean
   onSave: (input: AdminMenuItemInput, imageFile?: File) => Promise<void>
   onClose: () => void
 }
 
-export default function ItemFormModal({ item, saving, onSave, onClose }: Props) {
+export default function ItemFormModal({ item, categories, saving, onSave, onClose }: Props) {
   const [form, setForm] = useState<AdminMenuItemInput>(
     item
       ? {
@@ -63,7 +49,7 @@ export default function ItemFormModal({ item, saving, onSave, onClose }: Props) 
           tags: item.tags ?? [],
           image_url: item.image_url,
         }
-      : EMPTY_FORM,
+      : { ...EMPTY_FORM, category: categories[0]?.key ?? '' },
   )
 
   const [tagInput, setTagInput] = useState((item?.tags ?? []).join(', '))
@@ -195,9 +181,9 @@ export default function ItemFormModal({ item, saving, onSave, onClose }: Props) 
                 onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}
                 className={inputClass('cursor-pointer')}
               >
-                {CATEGORIES.map(c => (
-                  <option key={c.value} value={c.value} className="bg-[#1A1A1A]">
-                    {c.label}
+                {categories.map(c => (
+                  <option key={c.key} value={c.key} className="bg-[#1A1A1A]">
+                    {c.icon} {c.label}
                   </option>
                 ))}
               </select>
