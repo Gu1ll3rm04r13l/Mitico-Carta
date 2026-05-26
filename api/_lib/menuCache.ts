@@ -13,22 +13,6 @@ export interface ServerMenuCategory {
   items: ServerMenuItem[]
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  entradas: 'Entradas',
-  cervezas: 'Cervezas',
-  cocteles: 'Cócteles',
-  vinos: 'Vinos',
-  'sin-alcohol': 'Sin Alcohol',
-  pizzas: 'Pizzas',
-  postres: 'Postres',
-  sandwiches: 'Sandwiches',
-  panchos: 'Panchos',
-  empanadas: 'Empanadas',
-  ensaladas: 'Ensaladas',
-}
-
-const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS)
-
 // Cache module-scope. En Vercel se reusa entre invocaciones warm (~10-15min).
 // En Express dev persiste mientras el proceso vive.
 const TTL_MS = 60_000
@@ -36,16 +20,23 @@ let cache: { data: ServerMenuCategory[]; expiresAt: number } | null = null
 let inflight: Promise<ServerMenuCategory[]> | null = null
 
 async function fetchMenuFromDb(): Promise<ServerMenuCategory[]> {
-  const { data, error } = await supabaseServer
-    .from('menu_items')
-    .select('name, description, price, category, sort_order, is_signature')
-    .eq('available', true)
-    .order('sort_order')
+  const [catRes, itemRes] = await Promise.all([
+    supabaseServer
+      .from('categories')
+      .select('key, label, sort_order')
+      .order('sort_order'),
+    supabaseServer
+      .from('menu_items')
+      .select('name, description, price, category, sort_order, is_signature')
+      .eq('available', true)
+      .order('sort_order'),
+  ])
 
-  if (error) throw new Error(`[menuCache] Supabase: ${error.message}`)
+  if (catRes.error) throw new Error(`[menuCache] Supabase categories: ${catRes.error.message}`)
+  if (itemRes.error) throw new Error(`[menuCache] Supabase items: ${itemRes.error.message}`)
 
   const grouped = new Map<string, ServerMenuItem[]>()
-  for (const row of data ?? []) {
+  for (const row of itemRes.data ?? []) {
     const list = grouped.get(row.category) ?? []
     list.push({
       name: row.name,
@@ -56,12 +47,12 @@ async function fetchMenuFromDb(): Promise<ServerMenuCategory[]> {
     grouped.set(row.category, list)
   }
 
-  return CATEGORY_ORDER
-    .filter(key => grouped.has(key))
-    .map(key => ({
-      key,
-      label: CATEGORY_LABELS[key],
-      items: grouped.get(key) ?? [],
+  return (catRes.data ?? [])
+    .filter(cat => grouped.has(cat.key))
+    .map(cat => ({
+      key: cat.key,
+      label: cat.label,
+      items: grouped.get(cat.key) ?? [],
     }))
 }
 
