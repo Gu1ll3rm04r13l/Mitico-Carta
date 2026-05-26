@@ -1,11 +1,13 @@
-import { useTransition, useState } from 'react'
+import { useTransition, useState, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAdminMenu } from '../../hooks/useAdminMenu'
-import { CATEGORY_LABELS } from '../../lib/categories'
+import { FALLBACK_CATEGORY_ICON } from '../../lib/categories'
 import ItemFormModal from './ItemFormModal'
+import CategoryFormModal from './CategoryFormModal'
+import CategoryDeleteModal from './CategoryDeleteModal'
 import BulkPriceModal from './BulkPriceModal'
 import ImportExportBar from './ImportExportBar'
-import type { AdminMenuItem, AdminMenuItemInput } from '../../types'
+import type { AdminMenuItem, AdminMenuItemInput, Category } from '../../types'
 
 // ─── AvailableToggle ────────────────────────────────────────────────────────
 
@@ -48,11 +50,13 @@ function AvailableToggle({
 
 function MenuItemRow({
   item,
+  icon,
   onToggle,
   onEdit,
   onDelete,
 }: {
   item: AdminMenuItem
+  icon: string
   onToggle: (id: string, current: boolean) => Promise<void>
   onEdit: (item: AdminMenuItem) => void
   onDelete: (item: AdminMenuItem) => void
@@ -73,7 +77,7 @@ function MenuItemRow({
         />
       ) : (
         <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/8 shrink-0 flex items-center justify-center text-muted text-lg">
-          {CATEGORY_LABELS[item.category]?.icon ?? '🍽️'}
+          {icon}
         </div>
       )}
 
@@ -127,22 +131,23 @@ function MenuItemRow({
 // ─── CategorySection ──────────────────────────────────────────────────────────
 
 function CategorySection({
-  catKey,
+  category,
   items,
   onToggle,
   onEdit,
   onDelete,
+  onEditCategory,
   onDeleteCategory,
 }: {
-  catKey: string
+  category: Category
   items: AdminMenuItem[]
   onToggle: (id: string, current: boolean) => Promise<void>
   onEdit: (item: AdminMenuItem) => void
   onDelete: (item: AdminMenuItem) => void
-  onDeleteCategory: (catKey: string) => void
+  onEditCategory: (category: Category) => void
+  onDeleteCategory: (category: Category) => void
 }) {
   const [open, setOpen] = useState(true)
-  const meta = CATEGORY_LABELS[catKey]
   const activeCount = items.filter(i => i.available).length
 
   return (
@@ -151,9 +156,21 @@ function CategorySection({
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => onDeleteCategory(catKey)}
-            aria-label={`Eliminar categoría ${meta?.label ?? catKey}`}
-            title="Eliminar categoría y todos sus productos"
+            onClick={() => onEditCategory(category)}
+            aria-label={`Editar categoría ${category.label}`}
+            title="Editar categoría (nombre / icono)"
+            className="p-1.5 rounded-lg text-muted hover:text-cream hover:bg-white/8 transition-colors shrink-0"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => onDeleteCategory(category)}
+            aria-label={`Eliminar categoría ${category.label}`}
+            title="Eliminar categoría"
             className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors shrink-0"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -168,8 +185,8 @@ function CategorySection({
             onClick={() => setOpen(prev => !prev)}
             className="flex items-center gap-2 group"
           >
-            <span className="text-lg">{meta?.icon}</span>
-            <h2 className="text-cream font-heading text-xl tracking-wider">{meta?.label ?? catKey}</h2>
+            <span className="text-lg">{category.icon}</span>
+            <h2 className="text-cream font-heading text-xl tracking-wider">{category.label}</h2>
             <span
               className={[
                 'text-muted transition-transform duration-200 text-base ml-1',
@@ -186,17 +203,24 @@ function CategorySection({
       </div>
 
       {open && (
-        <div className="bg-bg-card rounded-2xl overflow-hidden border border-white/5 divide-y divide-white/5">
-          {items.map(item => (
-            <MenuItemRow
-              key={item.id}
-              item={item}
-              onToggle={onToggle}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))}
-        </div>
+        items.length === 0 ? (
+          <div className="bg-bg-card rounded-2xl border border-white/5 px-4 py-6 text-center">
+            <p className="text-muted text-xs">Sin productos. Agregá uno con "Nuevo producto".</p>
+          </div>
+        ) : (
+          <div className="bg-bg-card rounded-2xl overflow-hidden border border-white/5 divide-y divide-white/5">
+            {items.map(item => (
+              <MenuItemRow
+                key={item.id}
+                item={item}
+                icon={category.icon || FALLBACK_CATEGORY_ICON}
+                onToggle={onToggle}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
+          </div>
+        )
       )}
     </section>
   )
@@ -253,70 +277,26 @@ function DeleteConfirmModal({
   )
 }
 
-// ─── CategoryDeleteConfirmModal ───────────────────────────────────────────────
-
-function CategoryDeleteConfirmModal({
-  label,
-  count,
-  deleting,
-  onConfirm,
-  onCancel,
-}: {
-  label: string
-  count: number
-  deleting: boolean
-  onConfirm: () => void
-  onCancel: () => void
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-sm bg-bg-card rounded-2xl border border-white/10 shadow-2xl p-6 flex flex-col gap-5">
-        <div>
-          <h3 className="font-heading text-xl text-cream tracking-wide mb-1">Eliminar categoría</h3>
-          <p className="text-muted text-sm font-body leading-relaxed">
-            Vas a eliminar la categoría <span className="text-cream font-medium">{label}</span> y sus{' '}
-            <span className="text-red-400 font-medium">{count} producto{count === 1 ? '' : 's'}</span>.
-            Esta acción no se puede deshacer.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-muted hover:text-cream text-sm font-body transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={deleting}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white text-sm font-body transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {deleting ? (
-              <>
-                <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Eliminando…
-              </>
-            ) : (
-              `Eliminar ${count} ítem${count === 1 ? '' : 's'}`
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ─── AdminPanel ───────────────────────────────────────────────────────────────
 
 export default function AdminPanel() {
-  const { grouped, allItems, loading, mutating, error, toggleAvailable, insertItem, updateItem, deleteItem, deleteCategory, bulkUpdatePrices, bulkImport, refetch } = useAdminMenu()
+  const {
+    grouped, categories, allItems, loading, mutating, error,
+    toggleAvailable, insertItem, updateItem, deleteItem,
+    insertCategory, updateCategory, deleteCategoryWithReassign,
+    bulkUpdatePrices, bulkImport, refetch,
+  } = useAdminMenu()
 
   const [formItem, setFormItem] = useState<AdminMenuItem | null | 'new'>(null)
   const [deleteTarget, setDeleteTarget] = useState<AdminMenuItem | null>(null)
-  const [deleteCatTarget, setDeleteCatTarget] = useState<string | null>(null)
+  const [catForm, setCatForm] = useState<Category | null | 'new'>(null)
+  const [catDeleteTarget, setCatDeleteTarget] = useState<Category | null>(null)
   const [bulkOpen, setBulkOpen] = useState(false)
+
+  const otherCategories = useMemo(
+    () => (catDeleteTarget ? categories.filter(c => c.key !== catDeleteTarget.key) : []),
+    [categories, catDeleteTarget],
+  )
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -338,10 +318,19 @@ export default function AdminPanel() {
     setDeleteTarget(null)
   }
 
-  async function handleDeleteCategoryConfirm() {
-    if (!deleteCatTarget) return
-    await deleteCategory(deleteCatTarget)
-    setDeleteCatTarget(null)
+  async function handleCategorySave(label: string, icon: string) {
+    if (catForm === 'new') {
+      await insertCategory(label, icon)
+    } else if (catForm) {
+      await updateCategory(catForm.key, { label, icon })
+    }
+    setCatForm(null)
+  }
+
+  async function handleCategoryDelete(reassignIds: string[], targetKey: string | null) {
+    if (!catDeleteTarget) return
+    await deleteCategoryWithReassign(catDeleteTarget.key, { reassignIds, targetKey })
+    setCatDeleteTarget(null)
   }
 
   if (loading) {
@@ -362,8 +351,6 @@ export default function AdminPanel() {
       </div>
     )
   }
-
-  const categoryKeys = Object.keys(CATEGORY_LABELS).filter(k => grouped[k]?.length)
 
   return (
     <div className="min-h-screen bg-bg-deep font-body">
@@ -398,6 +385,15 @@ export default function AdminPanel() {
             Nuevo producto
           </button>
           <button
+            onClick={() => setCatForm('new')}
+            className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-cream text-xs font-body font-medium px-3 py-2 rounded-xl transition-colors border border-white/10"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Nueva categoría
+          </button>
+          <button
             onClick={() => setBulkOpen(true)}
             className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-cream text-xs font-body font-medium px-3 py-2 rounded-xl transition-colors border border-white/10"
           >
@@ -408,7 +404,7 @@ export default function AdminPanel() {
             </svg>
             Aumentar precios %
           </button>
-          <ImportExportBar items={allItems} saving={mutating} onImport={bulkImport} />
+          <ImportExportBar items={allItems} categories={categories} saving={mutating} onImport={bulkImport} />
         </div>
       </header>
 
@@ -422,15 +418,16 @@ export default function AdminPanel() {
 
       {/* Categories */}
       <div className="px-4 pb-12 flex flex-col gap-6 mt-2">
-        {categoryKeys.map(catKey => (
+        {categories.map(category => (
           <CategorySection
-            key={catKey}
-            catKey={catKey}
-            items={grouped[catKey]}
+            key={category.key}
+            category={category}
+            items={grouped[category.key] ?? []}
             onToggle={toggleAvailable}
             onEdit={item => setFormItem(item)}
             onDelete={item => setDeleteTarget(item)}
-            onDeleteCategory={key => setDeleteCatTarget(key)}
+            onEditCategory={cat => setCatForm(cat)}
+            onDeleteCategory={cat => setCatDeleteTarget(cat)}
           />
         ))}
       </div>
@@ -439,13 +436,14 @@ export default function AdminPanel() {
       {formItem !== null && (
         <ItemFormModal
           item={formItem === 'new' ? null : formItem}
+          categories={categories}
           saving={mutating}
           onSave={handleSave}
           onClose={() => setFormItem(null)}
         />
       )}
 
-      {/* Delete confirmation */}
+      {/* Delete item confirmation */}
       {deleteTarget && (
         <DeleteConfirmModal
           item={deleteTarget}
@@ -455,14 +453,25 @@ export default function AdminPanel() {
         />
       )}
 
-      {/* Category delete confirmation */}
-      {deleteCatTarget && (
-        <CategoryDeleteConfirmModal
-          label={CATEGORY_LABELS[deleteCatTarget]?.label ?? deleteCatTarget}
-          count={grouped[deleteCatTarget]?.length ?? 0}
+      {/* Category form (new or edit) */}
+      {catForm !== null && (
+        <CategoryFormModal
+          category={catForm === 'new' ? null : catForm}
+          saving={mutating}
+          onSave={handleCategorySave}
+          onClose={() => setCatForm(null)}
+        />
+      )}
+
+      {/* Category delete (reassign) */}
+      {catDeleteTarget && (
+        <CategoryDeleteModal
+          category={catDeleteTarget}
+          items={grouped[catDeleteTarget.key] ?? []}
+          otherCategories={otherCategories}
           deleting={mutating}
-          onConfirm={handleDeleteCategoryConfirm}
-          onCancel={() => setDeleteCatTarget(null)}
+          onConfirm={handleCategoryDelete}
+          onCancel={() => setCatDeleteTarget(null)}
         />
       )}
 
@@ -470,6 +479,7 @@ export default function AdminPanel() {
       {bulkOpen && (
         <BulkPriceModal
           items={allItems}
+          categories={categories}
           saving={mutating}
           onApply={bulkUpdatePrices}
           onClose={() => setBulkOpen(false)}
