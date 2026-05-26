@@ -1,15 +1,14 @@
-// Labels e iconos de categorías de la carta. Compartido por el panel admin.
+// Set de emojis para el picker de categorías del panel admin.
+// Las categorías reales (label/icon/orden) viven en la tabla `categories` de Supabase.
 
-export const CATEGORY_LABELS: Record<string, { label: string; icon: string }> = {
-  entradas:      { label: 'Entradas',    icon: '🧀' },
-  cervezas:      { label: 'Cervezas',    icon: '🍺' },
-  cocteles:      { label: 'Cócteles',    icon: '🍸' },
-  vinos:         { label: 'Vinos',       icon: '🍷' },
-  'sin-alcohol': { label: 'Sin Alcohol', icon: '🥤' },
-  pizzas:        { label: 'Pizzas',      icon: '🍕' },
-  postres:       { label: 'Postres',     icon: '🍮' },
-  sandwiches:    { label: 'Sandwiches',  icon: '🥪' },
-  panchos:       { label: 'Panchos',     icon: '🌭' },
-  empanadas:     { label: 'Empanadas',   icon: '🥟' },
-  ensaladas:     { label: 'Ensaladas',   icon: '🥗' },
-}
+/** Emojis sugeridos para iconos de categoría (comida/bebida). */
+export const CATEGORY_ICON_CHOICES: string[] = [
+  '🧀', '🍕', '🥪', '🌭', '🥟', '🥗', '🍔', '🍟', '🌮', '🌯',
+  '🍝', '🍜', '🍲', '🥘', '🍤', '🍣', '🥩', '🍗', '🥓', '🍳',
+  '🍮', '🍰', '🍦', '🍩', '🍪', '🍫', '🧁', '🥧',
+  '🍺', '🍷', '🍸', '🍹', '🍻', '🥂', '🥃', '🍾', '🥤', '🧃',
+  '☕', '🧉', '🫖', '💧',
+]
+
+/** Icono por defecto cuando una categoría no tiene uno o es desconocida. */
+export const FALLBACK_CATEGORY_ICON = '🍽️'
