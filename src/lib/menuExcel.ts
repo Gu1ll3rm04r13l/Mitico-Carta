@@ -4,15 +4,12 @@
 // ExcelJS solo se importa acá → vive en el chunk lazy del panel admin (no afecta la carta pública).
 
 import ExcelJS from 'exceljs'
-import { CATEGORY_LABELS } from './categories'
 import type { AdminMenuItem, AdminMenuItemInput } from '../types'
 
 // Paleta de la marca para el estilo de tabla del Excel.
 const HEADER_FILL = 'FFE8622A' // accent (naranja Mítico)
 const HEADER_FONT = 'FFFFFFFF' // texto blanco en encabezado
 const BAND_FILL = 'FFF6EFE3'   // crema suave para filas alternadas
-
-const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS)
 
 export const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
@@ -39,7 +36,7 @@ const COLUMNS: ColDef[] = [
 
 // ─── Export ──────────────────────────────────────────────────────────────────
 
-export async function toXlsx(items: AdminMenuItem[]): Promise<Blob> {
+export async function toXlsx(items: AdminMenuItem[], categoryKeys: string[]): Promise<Blob> {
   const wb = new ExcelJS.Workbook()
   wb.creator = 'Mítico'
   wb.created = new Date()
@@ -95,7 +92,7 @@ export async function toXlsx(items: AdminMenuItem[]): Promise<Blob> {
     ws.getCell(`${catCol}${r}`).dataValidation = {
       type: 'list',
       allowBlank: false,
-      formulae: [`"${CATEGORY_KEYS.join(',')}"`],
+      formulae: [`"${categoryKeys.join(',')}"`],
       showErrorMessage: true,
       errorStyle: 'error',
       errorTitle: 'Categoría inválida',

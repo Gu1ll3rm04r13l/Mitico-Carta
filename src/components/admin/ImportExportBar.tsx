@@ -1,14 +1,16 @@
 import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toXlsx, parseXlsx, rowsToImport, type ImportResult } from '../../lib/menuExcel'
-import type { AdminMenuItem, AdminMenuItemInput } from '../../types'
+import type { AdminMenuItem, AdminMenuItemInput, Category } from '../../types'
 
 export default function ImportExportBar({
   items,
+  categories,
   saving,
   onImport,
 }: {
   items: AdminMenuItem[]
+  categories: Category[]
   saving: boolean
   onImport: (rows: { id: string; input: Partial<AdminMenuItemInput> }[]) => Promise<void>
 }) {
@@ -20,7 +22,7 @@ export default function ImportExportBar({
   async function handleExport() {
     setBusy(true)
     try {
-      const blob = await toXlsx(items)
+      const blob = await toXlsx(items, categories.map(c => c.key))
       const url = URL.createObjectURL(blob)
       const date = new Date().toISOString().slice(0, 10)
       const a = document.createElement('a')

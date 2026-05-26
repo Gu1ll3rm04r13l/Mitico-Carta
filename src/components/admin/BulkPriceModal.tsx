@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
-import { CATEGORY_LABELS } from '../../lib/categories'
 import { applyPercent, type RoundMode } from '../../lib/priceBulk'
-import type { AdminMenuItem } from '../../types'
+import type { AdminMenuItem, Category } from '../../types'
 
 const ROUND_OPTIONS: { mode: RoundMode; label: string }[] = [
   { mode: 'nearest', label: 'Cercano' },
@@ -11,11 +10,13 @@ const ROUND_OPTIONS: { mode: RoundMode; label: string }[] = [
 
 export default function BulkPriceModal({
   items,
+  categories,
   saving,
   onApply,
   onClose,
 }: {
   items: AdminMenuItem[]
+  categories: Category[]
   saving: boolean
   onApply: (updates: { id: string; price: number }[]) => Promise<void>
   onClose: () => void
@@ -23,10 +24,14 @@ export default function BulkPriceModal({
   const [percent, setPercent] = useState<string>('10')
   const [mode, setMode] = useState<RoundMode>('nearest')
 
-  // Categorías presentes en la carta, en el orden de CATEGORY_LABELS.
+  // Categorías presentes en la carta, en el orden de la tabla.
   const presentCategories = useMemo(
-    () => Object.keys(CATEGORY_LABELS).filter(k => items.some(i => i.category === k)),
-    [items],
+    () => categories.filter(c => items.some(i => i.category === c.key)).map(c => c.key),
+    [categories, items],
+  )
+  const catMeta = useMemo(
+    () => Object.fromEntries(categories.map(c => [c.key, c])) as Record<string, Category>,
+    [categories],
   )
   const [selectedCats, setSelectedCats] = useState<string[]>(presentCategories)
 
@@ -133,7 +138,7 @@ export default function BulkPriceModal({
             <div className="flex flex-wrap gap-2">
               {presentCategories.map(cat => {
                 const active = selectedCats.includes(cat)
-                const meta = CATEGORY_LABELS[cat]
+                const meta = catMeta[cat]
                 return (
                   <button
                     key={cat}
