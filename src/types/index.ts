@@ -14,18 +14,16 @@ export interface MenuItem {
   isSignature?: boolean
 }
 
-export type MenuCategoryId =
-  | 'pizzas'
-  | 'sandwiches'
-  | 'entradas'
-  | 'panchos'
-  | 'empanadas'
-  | 'postres'
-  | 'cocteles'
-  | 'cervezas'
-  | 'vinos'
-  | 'bebidas'
-  | 'ensaladas'
+/** key de categoría (slug). Antes era un union cerrado; ahora la fuente es la tabla `categories`. */
+export type MenuCategoryId = string
+
+/** Fila de la tabla `categories` (fuente única de las categorías de la carta). */
+export interface Category {
+  key: string
+  label: string
+  icon: string
+  sort_order: number
+}
 
 export interface MenuCategory {
   id: MenuCategoryId
