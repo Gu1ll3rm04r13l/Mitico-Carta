@@ -24,6 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
+      temperature: 0.6,
       max_tokens: 500,
       messages: [{ role: 'system', content: systemPrompt }, ...messages],
     })
