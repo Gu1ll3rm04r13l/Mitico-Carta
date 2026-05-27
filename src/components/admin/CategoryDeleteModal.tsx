@@ -87,7 +87,7 @@ export default function CategoryDeleteModal({
                 value={targetKey}
                 onChange={e => setTargetKey(e.target.value)}
                 disabled={otherCategories.length === 0}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-cream text-sm font-body focus:outline-none focus:border-accent/50 cursor-pointer disabled:opacity-50"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-cream text-base font-body focus:outline-none focus:border-accent/40 cursor-pointer disabled:opacity-50"
               >
                 {otherCategories.length === 0 ? (
                   <option value="">No hay otras categorías</option>

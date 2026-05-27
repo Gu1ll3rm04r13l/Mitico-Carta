@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { AdminMenuItem, AdminMenuItemInput, Category } from '../../types'
 
@@ -15,9 +15,11 @@ const EMPTY_FORM: Omit<AdminMenuItemInput, 'category'> = {
 
 function inputClass(extra = '') {
   return [
+    // text-base = 16px: evita el auto-zoom de iOS al enfocar inputs <16px.
     'w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5',
-    'text-cream text-sm font-body placeholder:text-muted',
-    'focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30',
+    'text-cream text-base font-body placeholder:text-muted',
+    // Focus minimo: solo un cambio sutil de borde, sin ring/glow.
+    'focus:outline-none focus:border-accent/40',
     'transition-colors',
     extra,
   ].join(' ')
@@ -58,13 +60,7 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
   const [imageFile, setImageFile] = useState<File | undefined>(undefined)
   const [imagePreview, setImagePreview] = useState<string | null>(item?.image_url ?? null)
   const [formError, setFormError] = useState<string | null>(null)
-  const nameRef = useRef<HTMLInputElement>(null)
-
-  // Autofocus solo en desktop (pointer fino). En touch el autofocus
-  // dispara el teclado y tapa el modal (mobile-first).
-  useEffect(() => {
-    if (window.matchMedia('(pointer: fine)').matches) nameRef.current?.focus()
-  }, [])
+  // Sin autofocus: el dueno no quiere foco automatico en ningun momento.
 
   // Sync tags from text input
   function handleTagInput(value: string) {
@@ -110,9 +106,9 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
     >
-      <div className="w-full sm:max-w-lg bg-bg-card rounded-t-3xl sm:rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
+      <div className="w-full max-w-md bg-bg-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/8 shrink-0">
           <h2 className="font-heading text-2xl text-cream tracking-wider">
@@ -137,7 +133,6 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
           <div>
             <label className={labelClass()}>Nombre *</label>
             <input
-              ref={nameRef}
               type="text"
               value={form.name}
               onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
