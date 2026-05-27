@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { useChat } from '../hooks/useChat'
+import { useChat, type UseChatReturn } from '../hooks/useChat'
 import { buildWhatsAppUrl } from '../hooks/useReservation'
 import type { ChatMessage, ChatIntent } from '../types'
 
@@ -116,8 +116,8 @@ function FallbackBanner({ onDismiss }: { onDismiss: () => void }) {
 
 // ─── ChatPanel ──────────────────────────────────────────────────────────────
 
-function ChatPanel({ onClose, intent }: { onClose: () => void; intent: ChatIntent }) {
-  const { messages, isLoading, error, pendingOrderUrl, sendMessage, clearError, clearOrder } = useChat(intent)
+function ChatPanel({ onClose, chat }: { onClose: () => void; chat: UseChatReturn }) {
+  const { messages, isLoading, error, pendingOrderUrl, sendMessage, clearError, clearOrder } = chat
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -241,6 +241,10 @@ export default function ChatWidget({
 }: ChatWidgetProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
 
+  // El estado de la charla vive acá (siempre montado), no en ChatPanel. Así al
+  // minimizar el chat para ver la carta no se pierde la conversación.
+  const chat = useChat(intent)
+
   const isControlled = externalIsOpen !== undefined
   const isOpen = isControlled ? externalIsOpen : internalIsOpen
 
@@ -265,7 +269,7 @@ export default function ChatWidget({
     >
       {isOpen && (
         <div style={{ animation: 'chatSlideUp 0.2s ease-out', transformOrigin: 'bottom right' }}>
-          <ChatPanel onClose={() => setIsOpen(false)} intent={intent} />
+          <ChatPanel onClose={() => setIsOpen(false)} chat={chat} />
         </div>
       )}
 

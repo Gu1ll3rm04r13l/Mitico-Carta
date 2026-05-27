@@ -61,15 +61,20 @@ export function useChat(intent: ChatIntent = null): UseChatReturn {
   const [error, setError] = useState<string | null>(null)
   const [pendingOrderUrl, setPendingOrderUrl] = useState<string | null>(null)
 
-  // Resetear si cambia el intent (ej: se abre por segunda vez con distinto flujo)
-  const prevIntentRef = useRef(intent)
+  // El intent 'order' (botón "Hacer pedido") cambia el saludo inicial. App lo
+  // limpia a null enseguida, así que solo reaccionamos al pasar A 'order' y
+  // únicamente si la charla aún está fresca (sin mensajes del usuario): así no
+  // pisamos una conversación en curso cuando el chat se minimiza y reabre.
+  const prevIntentRef = useRef<ChatIntent>(intent)
   useEffect(() => {
-    if (intent !== prevIntentRef.current) {
-      prevIntentRef.current = intent
-      setMessages([intent === 'order' ? ORDER_WELCOME_MESSAGE : WELCOME_MESSAGE])
+    if (intent === 'order' && prevIntentRef.current !== 'order') {
+      setMessages(prev =>
+        prev.some(m => m.role === 'user') ? prev : [ORDER_WELCOME_MESSAGE],
+      )
       setPendingOrderUrl(null)
       setError(null)
     }
+    prevIntentRef.current = intent
   }, [intent])
 
   const sendMessage = useCallback(
