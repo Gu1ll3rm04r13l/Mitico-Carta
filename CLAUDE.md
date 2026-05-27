@@ -39,12 +39,14 @@ The app is a single-page landing for Mítico, a pizzería/bar. All source lives 
 types/index.ts              — Interfaces: MenuItem, MenuCategory, ReservationFormData, CancelFormData, ChatMessage, AdminMenuItem, etc.
 lib/supabase.ts             — Cliente Supabase frontend (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
 lib/timeSlots.ts            — TIME_SLOTS compartido por ReservationModal y CancelReservationModal
+lib/categories.ts           — CATEGORY_ICON_CHOICES (set emojis del picker) + FALLBACK_CATEGORY_ICON
+lib/slug.ts                 — toSlug(): texto → slug ASCII (usado por items y categorías)
 services/ai.ts              — sendChatMessage(): llama a /api/chat (solo envía mensajes; el prompt se arma server-side)
-hooks/useMenu.ts            — Fetch de menu_items desde Supabase, agrupa por categoría → MenuCategory[]
+hooks/useMenu.ts            — Fetch de categories + menu_items desde Supabase, agrupa → MenuCategory[]
 hooks/useReservation.ts     — Form state, validación (1-20 personas), buildReservationMessage(), WHATSAPP_NUMBER, buildWhatsAppUrl()
 hooks/useCancelReservation.ts — Misma estructura que useReservation pero para cancelaciones
 hooks/useChat.ts            — Mensajes, intent, ORDER_MARKER parser, pendingOrderUrl (WhatsApp)
-hooks/useAdminMenu.ts       — Fetch de todos los items (sin filtro RLS), toggleAvailable() con useOptimistic
+hooks/useAdminMenu.ts       — Fetch items + categories; CRUD de items y de categorías (insert/update/deleteCategoryWithReassign)
 components/
   LogoM.tsx                 — Logo SVG flotante
   ErrorBoundary.tsx         — Captura errores runtime en root (montado en main.tsx)
@@ -56,7 +58,10 @@ components/
   CancelReservationModal.tsx — Portal modal de cancelación. Usa useCancelReservation internamente
   ChatWidget.tsx            — Chat flotante. Props: isOpen, onOpenChange, intent, onIntentHandled
   admin/AdminLogin.tsx      — Login con Supabase Auth (cargado con React.lazy)
-  admin/AdminPanel.tsx      — Panel CRUD de carta (cargado con React.lazy)
+  admin/AdminPanel.tsx      — Panel CRUD de carta + categorías (cargado con React.lazy)
+  admin/ItemFormModal.tsx   — Crear/editar producto. Recibe categories por prop (select dinámico)
+  admin/CategoryFormModal.tsx — Crear/editar categoría (label + emoji picker)
+  admin/CategoryDeleteModal.tsx — Borrar categoría reasignando items (checkboxes + destino)
 App.tsx                     — Estado global: modales, chat, admin route. Admin con React.lazy + Suspense.
 api/_lib/supabase.ts        — Cliente Supabase server-side (SUPABASE_URL/ANON_KEY, fallback VITE_*)
 api/_lib/menuCache.ts       — getMenu(): fetch Supabase con cache módulo TTL 60s + dedupe inflight
@@ -78,10 +83,11 @@ server/index.ts             — Express proxy para Groq (dev local, puerto 3001)
 ## Supabase
 
 - **Tabla:** `menu_items` — columnas: `id`, `slug`, `name`, `description`, `price`, `category`, `sort_order`, `available`, `is_signature`, `tags`, `image_url`, `created_at`, `updated_at`
-- **RLS:** anon solo lee `available = true`. Authenticated (dueño) tiene acceso total.
+- **Tabla:** `categories` — columnas: `key` (PK, slug), `label`, `icon` (emoji), `sort_order`, `created_at`, `updated_at`. **Fuente única de las categorías de la carta** (label/icono/orden). `menu_items.category` es FK → `categories.key` (`ON DELETE RESTRICT ON UPDATE CASCADE`).
+- **RLS:** `menu_items` — anon solo lee `available = true`. `categories` — anon lee todo. Authenticated (dueño) tiene acceso total a ambas.
 - **Variables de entorno frontend:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_ADMIN_TOKEN`
 - **Variables de entorno server:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GROQ_API_KEY` (ver `.env.example`)
-- **Categorías en DB:** `entradas`, `cervezas`, `cocteles`, `vinos`, `sin-alcohol`, `pizzas`, `postres`, `sandwiches`, `panchos`, `empanadas`, `ensaladas` — `sin-alcohol` → `id: 'bebidas'` en el frontend (ver `CATEGORY_META` en `useMenu.ts`)
+- **Categorías:** ya NO están hardcodeadas. Se administran (crear/editar/borrar) desde el panel admin vía `useAdminMenu` contra la tabla `categories`. `src/lib/categories.ts` solo exporta el set de emojis del picker (`CATEGORY_ICON_CHOICES`) + `FALLBACK_CATEGORY_ICON`. Borrar una categoría usa flujo de reasignación de items (`CategoryDeleteModal`). El key de cada categoría es un slug inmutable (auto-derivado del label con `toSlug` de `src/lib/slug.ts`).
 
 ## Design tokens
 
@@ -106,6 +112,6 @@ In practice many components still use inline `style={{}}` for colors — prefer 
 - **No routing** — single page with anchor scroll (`href="#menu"`, `href="#reservas"`).
 - New page sections go in `src/components/`, imported and composed in `App.tsx`.
 - `WHATSAPP_NUMBER` y `buildWhatsAppUrl()` son constantes en `hooks/useReservation.ts` — reutilizables desde cualquier hook.
-- **La fuente única de verdad de la carta es Supabase.** El frontend la lee con `useMenu`, el bot la lee server-side con `getMenu()` (cache TTL 60s). No existen items estáticos.
+- **La fuente única de verdad de la carta es Supabase** (tablas `menu_items` y `categories`). El frontend la lee con `useMenu`, el bot la lee server-side con `getMenu()` (cache TTL 60s). No existen items ni categorías estáticas — todo se administra desde el panel.
 - El panel admin se accede via `?access=TOKEN` (token en `VITE_ADMIN_TOKEN`), nunca hardcodeado.
 - Cuando agregues nuevos modales o secciones grandes, considerá `React.lazy()` si solo aplican a un subset de usuarios (ver AdminPanel).

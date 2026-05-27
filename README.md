@@ -77,7 +77,7 @@ api/
 
 - **Reserva / Cancelación** → modal → genera mensaje → abre WhatsApp (`wa.me`).
 - **Chat / Pedido** → `ChatWidget` envía mensajes a `/api/chat`. El server lee el menú de Supabase (cache 60s), arma el system prompt con precios reales y consulta a Groq. Si la IA emite `[[PEDIDO:...]]`, se genera un link de WhatsApp con el pedido pre-cargado.
-- **Admin** → `?access=TOKEN` → login Supabase Auth → panel CRUD de la carta (toggle disponibilidad con optimistic UI, import/export Excel, aumento masivo de precios).
+- **Admin** → `?access=TOKEN` → login Supabase Auth → panel CRUD de la carta (toggle disponibilidad con optimistic UI, import/export Excel, aumento masivo de precios) y **CRUD de categorías** (crear con emoji picker, editar nombre/icono, borrar reasignando o eliminando sus productos).
 - **Menú** → `useMenu()` hace SELECT a Supabase (`available = true`) y agrupa por categoría.
 
 > **Fuente única de verdad de la carta: Supabase.** No hay items estáticos. Cambios en el admin se reflejan en el bot dentro de 60s.
@@ -88,9 +88,11 @@ api/
 
 Tabla `menu_items`: `id`, `slug`, `name`, `description`, `price`, `category`, `sort_order`, `available`, `is_signature`, `tags`, `image_url`, `created_at`, `updated_at`.
 
-**RLS:** anon solo lee `available = true`; el usuario autenticado (dueño) tiene acceso total.
+Tabla `categories`: `key` (PK, slug), `label`, `icon` (emoji), `sort_order`, `created_at`, `updated_at`. Fuente única de las categorías. `menu_items.category` es FK → `categories.key` (`ON DELETE RESTRICT`).
 
-Categorías: `entradas`, `cervezas`, `cocteles`, `vinos`, `sin-alcohol`, `pizzas`, `postres`, `sandwiches`, `panchos`, `empanadas`, `ensaladas`.
+**RLS:** `menu_items` — anon solo lee `available = true`. `categories` — anon lee todo. El usuario autenticado (dueño) tiene acceso total a ambas.
+
+Las categorías se administran desde el panel (no están hardcodeadas). El seed inicial: `entradas`, `cervezas`, `cocteles`, `vinos`, `sin-alcohol`, `pizzas`, `postres`, `sandwiches`, `panchos`, `empanadas`, `ensaladas`.
 
 ---
 
