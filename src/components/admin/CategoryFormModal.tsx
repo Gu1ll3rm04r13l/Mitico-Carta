@@ -17,15 +17,14 @@ export default function CategoryFormModal({ category, saving, onSave, onClose }:
   const [label, setLabel] = useState(category?.label ?? '')
   const [icon, setIcon] = useState(category?.icon ?? CATEGORY_ICON_CHOICES[0])
   const [formError, setFormError] = useState<string | null>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
+  const labelRef = useRef<HTMLInputElement>(null)
 
+  // Autofocus solo en desktop (pointer fino). En touch dispara el
+  // teclado y tapa el modal (mobile-first).
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+    if (window.matchMedia('(pointer: fine)').matches) labelRef.current?.focus()
+  }, [])
+  // Cierre solo via Cancelar o la cruz: evita perder datos por click fuera/Escape.
 
   const derivedKey = isEdit ? category!.key : toSlug(label)
 
@@ -49,8 +48,6 @@ export default function CategoryFormModal({ category, saving, onSave, onClose }:
 
   return createPortal(
     <div
-      ref={overlayRef}
-      onClick={e => { if (e.target === overlayRef.current) onClose() }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
     >
       <div className="w-full max-w-md bg-bg-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
@@ -75,11 +72,11 @@ export default function CategoryFormModal({ category, saving, onSave, onClose }:
           <div>
             <label className="block text-muted text-xs font-body mb-1.5 uppercase tracking-wider">Nombre *</label>
             <input
+              ref={labelRef}
               type="text"
               value={label}
               onChange={e => setLabel(e.target.value)}
               placeholder="Ej: Tragos sin alcohol"
-              autoFocus
               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-cream text-sm font-body placeholder:text-muted focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-colors"
             />
             {!isEdit && (

@@ -52,11 +52,19 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
       : { ...EMPTY_FORM, category: categories[0]?.key ?? '' },
   )
 
+  const [priceInput, setPriceInput] = useState(item ? String(item.price) : '')
+  const [orderInput, setOrderInput] = useState(item ? String(item.sort_order) : '')
   const [tagInput, setTagInput] = useState((item?.tags ?? []).join(', '))
   const [imageFile, setImageFile] = useState<File | undefined>(undefined)
   const [imagePreview, setImagePreview] = useState<string | null>(item?.image_url ?? null)
   const [formError, setFormError] = useState<string | null>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
+
+  // Autofocus solo en desktop (pointer fino). En touch el autofocus
+  // dispara el teclado y tapa el modal (mobile-first).
+  useEffect(() => {
+    if (window.matchMedia('(pointer: fine)').matches) nameRef.current?.focus()
+  }, [])
 
   // Sync tags from text input
   function handleTagInput(value: string) {
@@ -75,17 +83,8 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
     setImagePreview(URL.createObjectURL(file))
   }
 
-  function handleOverlayClick(e: React.MouseEvent) {
-    if (e.target === overlayRef.current) onClose()
-  }
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  // Cierre solo via Cancelar o la cruz: evitamos perder datos por
+  // un click fuera del form o un Escape accidental (no cerramos aca).
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -111,8 +110,6 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
 
   return createPortal(
     <div
-      ref={overlayRef}
-      onClick={handleOverlayClick}
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
     >
       <div className="w-full sm:max-w-lg bg-bg-card rounded-t-3xl sm:rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[92dvh]">
@@ -140,12 +137,12 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
           <div>
             <label className={labelClass()}>Nombre *</label>
             <input
+              ref={nameRef}
               type="text"
               value={form.name}
               onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Ej: Pizza Margherita"
               className={inputClass()}
-              autoFocus
             />
           </div>
 
@@ -169,8 +166,12 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
                 type="number"
                 min={0}
                 step={50}
-                value={form.price}
-                onChange={e => setForm(prev => ({ ...prev, price: Number(e.target.value) }))}
+                value={priceInput}
+                placeholder="0"
+                onChange={e => {
+                  setPriceInput(e.target.value)
+                  setForm(prev => ({ ...prev, price: Number(e.target.value) || 0 }))
+                }}
                 className={inputClass()}
               />
             </div>
@@ -196,8 +197,12 @@ export default function ItemFormModal({ item, categories, saving, onSave, onClos
             <input
               type="number"
               min={0}
-              value={form.sort_order}
-              onChange={e => setForm(prev => ({ ...prev, sort_order: Number(e.target.value) }))}
+              value={orderInput}
+              placeholder="0"
+              onChange={e => {
+                setOrderInput(e.target.value)
+                setForm(prev => ({ ...prev, sort_order: Number(e.target.value) || 0 }))
+              }}
               className={inputClass()}
             />
           </div>
