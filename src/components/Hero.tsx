@@ -19,14 +19,18 @@ export default function Hero({ onReserveClick, onOrderClick, onMenuClick }: Hero
       </div>
 
       <div className="relative z-10 text-center px-6">
-        <span className="block mb-4 text-[11px] tracking-[0.3em] uppercase text-accent font-body font-semibold">
-          Pizzería & Cocktail
+        <span
+          className="block mb-4 text-[11px] tracking-[0.3em] uppercase text-accent font-semibold"
+          style={{ fontFamily: '"Bodoni Moda", serif' }}
+        >
+          Pizza & Cocktail
         </span>
 
         <h1
-          className="mb-6 uppercase tracking-tight text-cream font-normal"
+          className="mb-6 uppercase tracking-tight text-cream"
           style={{
-            fontFamily: '"Prata", serif',
+            fontFamily: '"Bodoni Moda", serif',
+            fontWeight: 600,
             fontSize: 'clamp(4rem, 15vw, 9rem)',
             letterSpacing: '-0.02em',
           }}
