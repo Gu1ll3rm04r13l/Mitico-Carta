@@ -133,6 +133,8 @@ function MenuItemRow({
 function CategorySection({
   category,
   items,
+  open,
+  onToggleOpen,
   onToggle,
   onEdit,
   onDelete,
@@ -141,13 +143,14 @@ function CategorySection({
 }: {
   category: Category
   items: AdminMenuItem[]
+  open: boolean
+  onToggleOpen: (key: string) => void
   onToggle: (id: string, current: boolean) => Promise<void>
   onEdit: (item: AdminMenuItem) => void
   onDelete: (item: AdminMenuItem) => void
   onEditCategory: (category: Category) => void
   onDeleteCategory: (category: Category) => void
 }) {
-  const [open, setOpen] = useState(true)
   const activeCount = items.filter(i => i.available).length
 
   return (
@@ -182,7 +185,7 @@ function CategorySection({
           </button>
           <button
             type="button"
-            onClick={() => setOpen(prev => !prev)}
+            onClick={() => onToggleOpen(category.key)}
             className="flex items-center gap-2 group"
           >
             <span className="text-lg">{category.icon}</span>
@@ -292,11 +295,23 @@ export default function AdminPanel() {
   const [catForm, setCatForm] = useState<Category | null | 'new'>(null)
   const [catDeleteTarget, setCatDeleteTarget] = useState<Category | null>(null)
   const [bulkOpen, setBulkOpen] = useState(false)
+  // Categorías colapsadas (por key). Ausente = abierta. Default: todas abiertas.
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
   const otherCategories = useMemo(
     () => (catDeleteTarget ? categories.filter(c => c.key !== catDeleteTarget.key) : []),
     [categories, catDeleteTarget],
   )
+
+  const allCollapsed = categories.length > 0 && categories.every(c => collapsed[c.key])
+
+  function toggleCat(key: string) {
+    setCollapsed(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  function toggleAll() {
+    setCollapsed(allCollapsed ? {} : Object.fromEntries(categories.map(c => [c.key, true])))
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -404,6 +419,19 @@ export default function AdminPanel() {
             </svg>
             Aumentar precios %
           </button>
+          <button
+            onClick={toggleAll}
+            className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-cream text-xs font-body font-medium px-3 py-2 rounded-xl transition-colors border border-white/10"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {allCollapsed ? (
+                <polyline points="6 9 12 15 18 9" />
+              ) : (
+                <polyline points="18 15 12 9 6 15" />
+              )}
+            </svg>
+            {allCollapsed ? 'Expandir todo' : 'Colapsar todo'}
+          </button>
           <ImportExportBar items={allItems} categories={categories} saving={mutating} onImport={bulkImport} />
         </div>
       </header>
@@ -423,6 +451,8 @@ export default function AdminPanel() {
             key={category.key}
             category={category}
             items={grouped[category.key] ?? []}
+            open={!collapsed[category.key]}
+            onToggleOpen={toggleCat}
             onToggle={toggleAvailable}
             onEdit={item => setFormItem(item)}
             onDelete={item => setDeleteTarget(item)}
